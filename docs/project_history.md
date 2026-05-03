@@ -198,31 +198,103 @@ matoi team show my-startup    # вывод команды с аватарами
 
 ---
 
-### Текущее состояние (3 мая 2026)
+### Фаза 10: MVP Pipeline — matoi run работает (3 мая 2026)
 
-**Статус:** scaffolding завершён, CLI работает, агенты описаны. Pipeline не подключен к API.
+Подключен Anthropic API. Реализован 3-стадийный pipeline:
+
+1. **PM Brief** — PM формулирует задачу (Haiku — дёшево)
+2. **Expert Pass** — каждый агент даёт независимое мнение (Sonnet/Opus по policy)
+3. **Synthesis** — PM синтезирует финальное решение (Opus — критическое решение)
+
+**Артефакты сохраняются в файлы:**
+- `brief.md`, `opinion_*.md`, `decision.md`, `cost.json`
+
+**Также реализовано:**
+- `matoi task plan` — dry run, показывает маршрутизацию моделей без API вызовов
+- Budget enforcement — `--budget 1.0` ограничивает расход
+- Cost tracking по каждому вызову
+
+Первый тестовый прогон: "Validate market for AI-powered pet care" — Startup PM + Market Researcher + Backend Engineer. PM выдал 4-недельный план, ресёрчер дал анализ рынка с 13 источниками, инженер предложил стек. PM синтезировал решение: "AI Pet Health Triage for Dog Owners, landing page first."
+
+---
+
+### Фаза 11: Knowledge Graph Memory (3 мая 2026)
+
+Реализована система памяти на основе knowledge graph.
+
+**Как работает:**
+- После каждого `matoi run` Haiku извлекает сущности из артефактов (~$0.01/сессия)
+- Nodes: decisions, insights, risks, rejected alternatives — с тегами
+- Edges: related_to, builds_on, contradicts, mitigates
+- Новые ноды автоматически связываются с предыдущими через shared tags
+- При следующем run PM получает релевантный контекст из графа
+
+**CLI команды:**
+- `matoi memory show` — обзор графа: ноды, рёбра, сессии
+- `matoi memory search "query"` — текстовый поиск
+- `matoi memory clear` — очистка
+
+Граф хранится в `memory/graph.json`. Первый тест: после двух сессий — 8 nodes, 6 edges.
+
+---
+
+### Фаза 12: Новый UX — matoi как инструмент для любого проекта (3 мая 2026)
+
+**Ключевая переделка:** matoi теперь работает не внутри своего репо, а в любой директории пользователя.
+
+**Новый flow:**
+```
+cd ~/my-project      # пользователь в своём проекте
+matoi                # запуск → онбординг
+
+→ Step 1: API key (сохраняется глобально в ~/.matoi/config.json)
+→ Step 2: Project scan (языки, фреймворки, git, тесты, CI)
+→ Step 3: Интерактивная сборка команды с PM аватарами
+
+→ Создаётся ./matoi/ в проекте:
+   matoi/config.json      # команда и настройки
+   matoi/memory/           # knowledge graph
+   matoi/artifacts/        # результаты сессий
+```
+
+**Реализовано:**
+- `matoi` без аргументов = онбординг или статус
+- Project Scanner: определяет языки, фреймворки, git history, CI, Docker, тесты
+- Глобальный конфиг `~/.matoi/` для API key
+- Проектный конфиг `./matoi/` для команды и артефактов
+- `matoi run "task"` работает из любой инициализированной директории
+
+---
+
+### Текущее состояние (конец дня 3 мая 2026)
+
+**Статус:** работающий MVP. Pipeline реально вызывает API, агенты дают мнения, PM синтезирует решения, память накапливается.
 
 **Что работает:**
-- `matoi roster list` — таблица 14 агентов с Rich-рендерингом
-- `matoi roster show <slug>` — карточка агента с pixel-art аватаром
-- `matoi team create` — интерактивный выбор PM с галереей
-- `matoi team show` — вывод команды с аватаром PM и таблицей агентов
-- `matoi task run` — проверка API key с понятной ошибкой
-- Registry парсит .md файлы с YAML frontmatter
-- Pydantic модели: Agent, Team, Task, Session, Cost, Budget
-- Model router: Haiku/Sonnet/Opus маппинг
-- Cost tracker с budget enforcement
+- `matoi` — онбординг в любом проекте (API key → scan → team)
+- `matoi run "task"` — 3-стадийный pipeline с Anthropic API
+- `matoi task plan` — dry run с маршрутизацией моделей
+- `matoi roster list/show` — 14 агентов с pixel-art аватарами
+- `matoi team create/show` — интерактивная сборка команды
+- `matoi memory show/search` — knowledge graph
+- Cost-intelligent routing: Haiku/Sonnet/Opus по стадии и агенту
+- Budget enforcement
 - 8 тестов, все проходят
 
 **Что предстоит:**
-- Подключить Anthropic API key
-- Реализовать MVP pipeline (brief → expert pass → synthesis)
-- Artifact writer (сохранение результатов в файлы)
-- Conflict detection и debate engine
-- GitHub репозиторий
+- Conflict detection и debate engine (стадии 4-5 pipeline)
+- Больше агентов (Content Strategist, DevOps, Financial Modeler)
+- GitHub repo + PyPI + Homebrew (когда готов к релизу)
+- 3D визуализация проекта (CodeCharta/browser)
+- Streaming вывод (сейчас ждёт полный ответ)
+- Реальный cost tracking (цены за токены)
 
-**Git-история (5 коммитов):**
+**Git-история (9 коммитов):**
 ```
+9e01dad Redesign UX: matoi works in any project directory
+a88ec08 Implement knowledge graph memory system
+35aada9 Implement MVP pipeline: matoi run with Anthropic API
+5c8a382 Update project history and description for Matoi
 63b7853 Add 14 custom pixel-art avatars, auto-resize PNG to Braille
 25019d9 Add API key check for matoi run, implement matoi team show
 ead0ba9 Add 10 agents: executors, thinkers, critics with Superpowers-inspired behaviors
@@ -262,6 +334,11 @@ ead0ba9 Add 10 agents: executors, thinkers, critics with Superpowers-inspired be
        ▼
 "纏 Matoi — CLI-платформа с 14 агентами,  ← ренейминг + реализация
  pixel-art персонажами и работающим CLI"
+       │
+       ▼
+"Работающий MVP: pipeline с API,           ← первый реальный прогон
+ knowledge graph memory, onboarding
+ в любом проекте"
 ```
 
 ---
