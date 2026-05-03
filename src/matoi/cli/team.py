@@ -137,17 +137,18 @@ def remove_agent(
 
 @team_app.command("show")
 def show_team(name: str = typer.Argument(help="Team name.")) -> None:
-    """Show team composition."""
+    """Show team composition with avatars and agent details."""
     team_config = _load_team(name)
     if team_config is None:
         raise typer.Exit(1)
 
     registry = get_registry()
     pm = registry.get(team_config.pm)
-    if pm:
-        _render_team_summary(team_config, pm)
-    else:
+    if not pm:
         console.print(f"[yellow]PM '{team_config.pm}' not found in registry.[/yellow]")
+        raise typer.Exit(1)
+
+    _render_team_full(team_config, pm, registry)
 
 
 @team_app.command("recommend")
@@ -227,7 +228,7 @@ def _pick_agents(agents: list[AgentDefinition], max_count: int = 4) -> list[str]
 
 
 def _render_team_summary(team: TeamConfig, pm: AgentDefinition) -> None:
-    """Render team summary panel."""
+    """Render compact team summary panel (used after team create)."""
     color = PM_COLORS.get(pm.slug, "white")
 
     lines = [
@@ -246,9 +247,117 @@ def _render_team_summary(team: TeamConfig, pm: AgentDefinition) -> None:
 
     console.print(Panel(
         "\n".join(lines),
-        title="🏢 Team Summary",
+        title="纏 Team Summary",
         border_style=color,
     ))
+
+
+def _render_team_full(
+    team: TeamConfig, pm: AgentDefinition, registry: "AgentRegistry"
+) -> None:
+    """Render full team view with PM avatar and agent cards."""
+    from matoi.agents.registry import AgentRegistry
+
+    color = PM_COLORS.get(pm.slug, "white")
+    avatar = load_avatar(pm.slug) or ""
+
+    # ── PM header with avatar ──
+    pm_info = [
+        f"[bold]{pm.name}[/bold]",
+        f'[italic]"{pm.motto}"[/italic]' if pm.motto else "",
+        "",
+        f"  Role:     {pm.role}",
+        f"  Risk:     {_risk_bar(pm.risk_tolerance)} ({pm.risk_tolerance})",
+        f"  Debate:   {pm.debate_style}",
+        f"  Model:    brief={_tier_badge(pm.model_policy.brief.value)}"
+        f"  debate={_tier_badge(pm.model_policy.debate.value)}"
+        f"  synth={_tier_badge(pm.model_policy.synthesis.value)}",
+    ]
+
+    if avatar:
+        avatar_panel = Panel(
+            avatar.strip(),
+            border_style=color,
+            width=36,
+            padding=(0, 1),
+        )
+        info_panel = Panel(
+            "\n".join(pm_info),
+            title=f"[{color}]👔 PM[/{color}]",
+            border_style=color,
+            expand=True,
+            padding=(0, 1),
+        )
+        console.print()
+        console.print(Columns([avatar_panel, info_panel], expand=True))
+    else:
+        console.print()
+        console.print(Panel("\n".join(pm_info), title=f"[{color}]👔 PM[/{color}]", border_style=color))
+
+    # ── Team members table ──
+    if not team.agents:
+        console.print()
+        console.print("[dim]  No agents in team. Use 'matoi team add' to add agents.[/dim]")
+        console.print()
+        return
+
+    TYPE_ICONS = {
+        "coordinator": "👔",
+        "executor": "⚙️",
+        "thinker": "🧠",
+        "critic": "🔍",
+    }
+
+    CATEGORY_STYLES = {
+        "strategy": ("bold yellow", "Strategy"),
+        "research": ("bold cyan", "Research"),
+        "marketing": ("bold magenta", "Marketing"),
+        "design": ("bold green", "Design"),
+        "engineering": ("bold blue", "Engineering"),
+        "quality": ("bold red", "Quality"),
+    }
+
+    table = Table(
+        title="纏 Team Members",
+        title_style="bold white",
+        border_style="dim",
+        show_lines=True,
+        expand=True,
+    )
+    table.add_column("Agent", style="bold", min_width=20)
+    table.add_column("Type", width=14)
+    table.add_column("Category", width=16)
+    table.add_column("Risk", width=6, justify="center")
+    table.add_column("Debate", width=14)
+    table.add_column("Motto", style="italic dim", min_width=20)
+
+    for slug in team.agents:
+        agent = registry.get(slug)
+        if not agent:
+            table.add_row(slug, "?", "?", "?", "?", "[red]not found[/red]")
+            continue
+
+        cat_style, cat_label = CATEGORY_STYLES.get(
+            agent.category.value, ("white", agent.category.value)
+        )
+        type_icon = TYPE_ICONS.get(agent.agent_type.value, "")
+
+        table.add_row(
+            agent.name,
+            f"{type_icon} {agent.agent_type.value}",
+            f"[{cat_style}]{cat_label}[/{cat_style}]",
+            _risk_bar(agent.risk_tolerance),
+            agent.debate_style,
+            agent.motto or "—",
+        )
+
+    console.print()
+    console.print(table)
+
+    # ── Cost estimate ──
+    console.print()
+    console.print(f"  [dim]Team size: {team.agent_count()} agents (1 PM + {len(team.agents)} members)[/dim]")
+    console.print()
 
 
 def _risk_bar(risk: float) -> str:
@@ -261,6 +370,15 @@ def _risk_bar(risk: float) -> str:
     else:
         color = "green"
     return f"[{color}]{'█' * filled}{'░' * empty}[/{color}]"
+
+
+def _tier_badge(tier: str) -> str:
+    badges = {
+        "cheap": "[green]Haiku[/green]",
+        "balanced": "[yellow]Sonnet[/yellow]",
+        "premium": "[red bold]Opus[/red bold]",
+    }
+    return badges.get(tier, tier)
 
 
 # ── Team file helpers ──────────────────────────────────────────────────────
