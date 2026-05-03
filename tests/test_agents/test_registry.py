@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from agency.agents.registry import AgentRegistry
+from matoi.agents.registry import AgentRegistry
 
 
 AGENTS_DIR = Path(__file__).resolve().parents[2] / "agents"

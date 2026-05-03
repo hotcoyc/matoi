@@ -1,8 +1,8 @@
 """Tests for core domain models."""
 
-from agency.core.agent import AgentCategory, AgentDefinition, AgentType, ModelPolicy, ModelTier
-from agency.core.cost import Budget, CostRecord
-from agency.core.team import TeamConfig
+from matoi.core.agent import AgentCategory, AgentDefinition, AgentType, ModelPolicy, ModelTier
+from matoi.core.cost import Budget, CostRecord
+from matoi.core.team import TeamConfig
 
 
 def test_agent_definition_defaults():

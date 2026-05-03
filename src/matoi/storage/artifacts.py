@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from agency.core.task import TaskResult
+from matoi.core.task import TaskResult
 
 
 class ArtifactWriter:

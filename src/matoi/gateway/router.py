@@ -1,6 +1,6 @@
 """Cost-intelligent model routing."""
 
-from agency.core.agent import AgentDefinition, ModelTier
+from matoi.core.agent import AgentDefinition, ModelTier
 
 
 # Model ID mapping — update when new models are available

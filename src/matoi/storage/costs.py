@@ -1,6 +1,6 @@
 """Cost tracking — aggregate and report LLM usage costs."""
 
-from agency.core.cost import Budget, CostRecord
+from matoi.core.cost import Budget, CostRecord
 
 
 class CostTracker:

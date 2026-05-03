@@ -1,6 +1,6 @@
 """Selective activation logic — not all agents are active for every task."""
 
-from agency.core.agent import AgentDefinition
+from matoi.core.agent import AgentDefinition
 
 
 class ActivationEngine:

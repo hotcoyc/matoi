@@ -4,7 +4,7 @@ from pathlib import Path
 
 import frontmatter
 
-from agency.core.agent import AgentDefinition, ModelPolicy
+from matoi.core.agent import AgentDefinition, ModelPolicy
 
 
 class AgentRegistry:

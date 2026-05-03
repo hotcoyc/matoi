@@ -10,7 +10,7 @@ Stages:
 7. Artifacts — save all results to files
 """
 
-from agency.core.task import Task, TaskResult, TaskStatus
+from matoi.core.task import Task, TaskResult, TaskStatus
 
 
 class Pipeline:

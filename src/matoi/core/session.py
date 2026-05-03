@@ -5,7 +5,7 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
-from agency.core.cost import CostRecord
+from matoi.core.cost import CostRecord
 
 
 class SessionState(str, Enum):

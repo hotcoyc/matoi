@@ -8,7 +8,7 @@ Detects real disagreements:
 - Different scope decisions
 """
 
-from agency.core.task import Conflict
+from matoi.core.task import Conflict
 
 
 class ConflictDetector:

@@ -1,7 +1,7 @@
 [project]
-name = "ai-agency-platform"
+name = "matoi"
 version = "0.1.0"
-description = "CLI platform where AI agents work as a full startup team"
+description = "Matoi (纏) — CLI platform where AI agents work as a full startup team"
 readme = "README.md"
 requires-python = ">=3.11"
 license = "MIT"
@@ -29,14 +29,14 @@ viz = [
 ]
 
 [project.scripts]
-agency = "agency.cli.app:app"
+matoi = "matoi.cli.app:app"
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/agency"]
+packages = ["src/matoi"]
 
 [tool.ruff]
 target-version = "py311"

@@ -1,11 +1,11 @@
-# AI Agency Platform
+# 纏 Matoi
 
 CLI-платформа, где AI-агенты работают как полная стартап-команда.
 
 ## Project Structure
 
-- `src/agency/` — основной код платформы
-  - `cli/` — CLI Layer (Typer), команды `agency agents|team|task|session`
+- `src/matoi/` — основной код платформы
+  - `cli/` — CLI Layer (Typer), команды `matoi roster|team|task|session`
   - `core/` — Pydantic domain models (agent, team, task, session, cost)
   - `orchestrator/` — 7-stage pipeline, debate engine, conflict detection, synthesis
   - `agents/` — Agent Runtime: registry (.md parser), context builder, activation logic

@@ -1,6 +1,6 @@
 """Synthesis engine — PM synthesizes final decision."""
 
-from agency.core.task import DebateRound, TaskResult
+from matoi.core.task import DebateRound, TaskResult
 
 
 class SynthesisEngine:

@@ -8,7 +8,7 @@ Debate protocol:
 5. Recommendation — final recommendation from this round
 """
 
-from agency.core.task import Conflict, DebateRound
+from matoi.core.task import Conflict, DebateRound
 
 
 class DebateEngine:

@@ -2,7 +2,7 @@
 
 from pathlib import Path
 
-from agency.core.session import Session
+from matoi.core.session import Session
 
 
 class SessionStore:

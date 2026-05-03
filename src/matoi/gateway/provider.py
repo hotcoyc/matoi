@@ -2,7 +2,7 @@
 
 import anthropic
 
-from agency.core.cost import CostRecord, ModelTier
+from matoi.core.cost import CostRecord, ModelTier
 
 
 class AnthropicProvider:

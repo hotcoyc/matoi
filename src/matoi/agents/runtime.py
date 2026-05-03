@@ -1,6 +1,6 @@
 """Agent runtime — context builder and prompt assembly."""
 
-from agency.core.agent import AgentDefinition
+from matoi.core.agent import AgentDefinition
 
 
 class AgentRuntime:

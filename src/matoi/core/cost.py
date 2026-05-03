@@ -4,7 +4,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-from agency.core.agent import ModelTier
+from matoi.core.agent import ModelTier
 
 
 class CostRecord(BaseModel):
