@@ -1,0 +1,9 @@
+{
+  "name": "demo",
+  "pm": "startup-pm",
+  "agents": [
+    "market-researcher",
+    "backend-engineer"
+  ],
+  "description": "Demo team for testing pipeline"
+}

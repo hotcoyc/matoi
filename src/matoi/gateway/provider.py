@@ -11,7 +11,7 @@ class AnthropicProvider:
     def __init__(self) -> None:
         self.client = anthropic.Anthropic()
 
-    async def call(
+    def call(
         self,
         model_id: str,
         system_prompt: str,
