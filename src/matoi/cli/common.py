@@ -4,14 +4,19 @@ from pathlib import Path
 
 from matoi.agents.registry import AgentRegistry
 
-# Project root — walk up from this file to find agents/ directory
+# Package root — where agents/, assets/ are installed with the matoi package
 _CLI_DIR = Path(__file__).resolve().parent
-_PROJECT_ROOT = _CLI_DIR.parent.parent.parent  # src/matoi/cli -> project root
+_PACKAGE_ROOT = _CLI_DIR.parent.parent.parent  # src/matoi/cli -> matoi repo root
+
+
+def get_package_root() -> Path:
+    """Return the matoi package root (where agents/, assets/ live)."""
+    return _PACKAGE_ROOT
 
 
 def get_project_root() -> Path:
-    """Return the project root (where agents/, teams/, assets/ live)."""
-    return _PROJECT_ROOT
+    """Return the matoi package root (backward compat)."""
+    return _PACKAGE_ROOT
 
 
 def get_registry() -> AgentRegistry:

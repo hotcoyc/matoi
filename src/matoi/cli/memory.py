@@ -6,7 +6,7 @@ from rich.panel import Panel
 from rich.table import Table
 from rich.tree import Tree
 
-from matoi.cli.common import get_project_root
+from matoi.core.config import get_project_dir
 from matoi.storage.memory import MemoryStore
 
 console = Console()
@@ -32,7 +32,7 @@ NODE_COLORS = {
 @memory_app.command("show")
 def show_graph() -> None:
     """Show the knowledge graph overview."""
-    memory = MemoryStore(get_project_root())
+    memory = MemoryStore(get_project_dir())
     graph = memory.graph
 
     if not graph.nodes:
@@ -84,7 +84,7 @@ def show_graph() -> None:
 @memory_app.command("search")
 def search_graph(query: str = typer.Argument(help="Search query.")) -> None:
     """Search the knowledge graph."""
-    memory = MemoryStore(get_project_root())
+    memory = MemoryStore(get_project_dir())
     results = memory.graph.search(query)
 
     if not results:
@@ -112,6 +112,6 @@ def clear_graph(
         if not confirm:
             raise typer.Exit()
 
-    memory = MemoryStore(get_project_root())
+    memory = MemoryStore(get_project_dir())
     memory.graph_path.unlink(missing_ok=True)
     console.print("[dim]Knowledge graph cleared.[/dim]")
