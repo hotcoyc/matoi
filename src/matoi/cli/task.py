@@ -58,12 +58,14 @@ def run_task(
     from matoi.gateway.provider import AnthropicProvider
     from matoi.gateway.router import ModelRouter
     from matoi.orchestrator.pipeline import MVPPipeline
+    from matoi.storage.memory import MemoryStore
 
     team_config = _load_team(team)
     registry = get_registry()
     provider = AnthropicProvider()
     router = ModelRouter()
     output_dir = get_project_root() / "artifacts"
+    memory = MemoryStore(get_project_root())
 
     pipeline = MVPPipeline(
         team=team_config,
@@ -71,6 +73,7 @@ def run_task(
         provider=provider,
         router=router,
         output_dir=output_dir,
+        memory=memory,
         budget=Budget(max_total_usd=budget),
     )
 

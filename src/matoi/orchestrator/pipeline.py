@@ -23,6 +23,7 @@ from matoi.core.team import TeamConfig
 from matoi.gateway.provider import AnthropicProvider
 from matoi.gateway.router import ModelRouter
 from matoi.storage.costs import CostTracker
+from matoi.storage.memory import MemoryStore
 
 console = Console()
 
@@ -37,6 +38,7 @@ class MVPPipeline:
         provider: AnthropicProvider,
         router: ModelRouter,
         output_dir: Path,
+        memory: MemoryStore | None = None,
         budget: Budget | None = None,
     ) -> None:
         self.team = team
@@ -44,6 +46,7 @@ class MVPPipeline:
         self.provider = provider
         self.router = router
         self.output_dir = output_dir
+        self.memory = memory
         self.cost_tracker = CostTracker(budget or Budget())
 
     def run(self, task_description: str) -> Path:
@@ -65,6 +68,18 @@ class MVPPipeline:
             else:
                 console.print(f"[yellow]Agent '{slug}' not found, skipping.[/yellow]")
 
+        # ── Load memory context ──
+        memory_context = ""
+        if self.memory:
+            memory_context = self.memory.get_context(task_description)
+            if memory_context:
+                console.print(Panel(
+                    f"[dim]{len(self.memory.graph.nodes)} nodes in knowledge graph, "
+                    f"injecting relevant context[/dim]",
+                    title="🧠 Memory",
+                    border_style="magenta",
+                ))
+
         # ── Stage 1: PM Brief ──
         console.print()
         console.print(Panel(
@@ -74,7 +89,7 @@ class MVPPipeline:
         ))
         console.print()
 
-        brief = self._stage_brief(pm, task_description)
+        brief = self._stage_brief(pm, task_description, memory_context)
         (session_dir / "brief.md").write_text(f"# Brief by {pm.name}\n\n{brief}")
         console.print(Panel(brief, title=f"[bold]📋 Brief by {pm.name}[/bold]", border_style="cyan"))
 
@@ -116,11 +131,33 @@ class MVPPipeline:
         (session_dir / "cost.json").write_text(json.dumps(cost_summary, indent=2))
         console.print()
         console.print(Panel(cost_text, title="💰 Cost", border_style="dim"))
+
+        # ── Memory extraction ──
+        if self.memory:
+            artifacts = {"brief": brief, "decision": decision}
+            for slug, opinion in opinions.items():
+                agent = self.registry.get(slug)
+                name = agent.name if agent else slug
+                artifacts[f"opinion by {name}"] = opinion
+
+            new_nodes = self.memory.extract_and_store(
+                session_id=session_id,
+                artifacts=artifacts,
+                provider=self.provider,
+            )
+            if new_nodes:
+                node_labels = ", ".join(n.label for n in new_nodes[:5])
+                console.print(Panel(
+                    f"Extracted {len(new_nodes)} nodes: {node_labels}",
+                    title="🧠 Memory Updated",
+                    border_style="magenta",
+                ))
+
         console.print(f"\n[dim]Artifacts saved to: {session_dir}[/dim]\n")
 
         return session_dir
 
-    def _stage_brief(self, pm: AgentDefinition, task: str) -> str:
+    def _stage_brief(self, pm: AgentDefinition, task: str, memory_context: str = "") -> str:
         """PM creates a brief from the raw task."""
         model_id = self.router.resolve_model(pm, "brief")
         system = (
@@ -135,8 +172,12 @@ class MVPPipeline:
             "Be concise and actionable."
         )
 
+        user_msg = task
+        if memory_context:
+            user_msg = f"{task}\n\n{memory_context}"
+
         with console.status(f"[bold cyan]{pm.name}[/bold cyan] is writing the brief..."):
-            text, cost = self.provider.call(model_id, system, task)
+            text, cost = self.provider.call(model_id, system, user_msg)
 
         cost.agent_slug = pm.slug
         cost.stage = "brief"
