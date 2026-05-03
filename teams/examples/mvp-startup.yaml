@@ -1,0 +1,13 @@
+name: mvp-startup
+description: "Lean startup team for rapid MVP validation and launch."
+pm: startup-pm
+agents:
+  - market-researcher
+  - backend-engineer
+  - growth-marketer
+  - product-designer
+recommended_for:
+  - MVP validation
+  - Market research
+  - Quick prototyping
+  - Landing page creation

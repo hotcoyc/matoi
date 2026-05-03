@@ -1,0 +1,14 @@
+name: full-product
+description: "Full product team for comprehensive product development."
+pm: product-strategist-pm
+agents:
+  - ux-researcher
+  - product-designer
+  - backend-engineer
+  - frontend-engineer
+  - qa-strategist
+recommended_for:
+  - Product design
+  - Architecture decisions
+  - Full-stack development
+  - Quality-critical projects
