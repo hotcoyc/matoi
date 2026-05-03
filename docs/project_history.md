@@ -1,4 +1,4 @@
-# AI Agency Platform — История создания проекта
+# 纏 Matoi — История создания проекта
 
 ---
 
@@ -124,25 +124,111 @@
 
 ---
 
-### Текущее состояние (май 2026)
+### Фаза 6: Scaffolding и первый код (3 мая 2026)
 
-**Статус:** фаза проектирования и валидации идеи. Код ещё не написан.
+Проект перешёл из фазы проектирования в фазу разработки.
 
-**Что есть:**
-- 5 документов проектирования (~755 строк)
-- Детальная техническая спецификация
-- Конкурентный анализ
-- Бизнес-модель и монетизация
-- Чёткое позиционирование
+**Создана полная структура проекта (scaffolding):**
+- 6-слойная архитектура реализована как Python-пакет `src/agency/`
+- CLI Layer (Typer), Core (Pydantic models), Orchestrator (7-stage pipeline), Agent Runtime (registry + .md parser), Storage (sessions, artifacts, costs), Gateway (Anthropic SDK + model router)
+- 4 PM-агента с полными .md описаниями
+- 2 team presets (mvp-startup, full-product)
+- 8 тестов, все проходят
+- Команда `agency` работает из терминала
+
+**Реализованы CLI-команды:**
+- `agency agents list` — Rich-таблица всех агентов с категориями и risk bars
+- `agency agents show <slug>` — карточка агента с аватаром, model policy, strengths/weaknesses
+- `agency team create` — интерактивный выбор PM с галереей аватаров, выбор агентов
+
+---
+
+### Фаза 7: Ренейминг в Matoi (3 мая 2026)
+
+Проект нуждался в уникальном имени. После обширного поиска по древнеримским, скандинавским, японским, белорусским и древнерусским названиям выбрано:
+
+**Matoi (纏)** — знамя японских пожарных, за которым собирается команда.
+
+- PyPI, npm, GitHub — всё свободно
+- Метафора идеально подходит: знамя → сбор команды → координированное действие
+- Короткое (5 букв), запоминаемое, уникальное
+
+**Переименование:**
+- Пакет `agency` → `matoi`
+- CLI команда `agency` → `matoi`
+- Подкоманда `agents` → `roster` (короче, оригинальнее)
+
+```
+matoi roster list          # таблица агентов
+matoi roster show startup-pm  # карточка агента
+matoi team create my-startup  # интерактивный выбор PM
+matoi team show my-startup    # вывод команды с аватарами
+```
+
+---
+
+### Фаза 8: Агенты с поведенческими паттернами (3 мая 2026)
+
+Добавлено 10 новых агентов с глубокими поведенческими описаниями, вдохновлёнными проектом [Superpowers](https://github.com/obra/superpowers). Каждый агент имеет:
+- Iron Law (главное правило)
+- Self-review checklist
+- Escalation rules (когда остановиться)
+- Debate style (как спорить)
+- Anti-patterns (что не делать)
+
+**Executors (⚙️):** Backend Engineer (TDD), Frontend Engineer (user-focused), Product Designer (design-before-code), Growth Marketer (GTM experiments)
+
+**Thinkers (🧠):** Market Researcher (data-driven), Competitive Analyst (differentiation), Business Analyst (financial modeling), UX Researcher (user evidence)
+
+**Critics (🔍):** Security Reviewer (adversarial, OWASP), QA Strategist (spec compliance, distrustful by design)
+
+Итого: **14 агентов** в 6 категориях.
+
+---
+
+### Фаза 9: Pixel-art аватары (3 мая 2026)
+
+Каждый из 14 агентов получил уникальный pixel-art портрет (128x128 PNG). Аватары автоматически конвертируются в Braille Unicode для отображения в терминале.
+
+Система аватаров:
+- PNG-файлы в `assets/avatars/`
+- Автоматический ресайз и конвертация в Braille при загрузке (через Pillow)
+- Fallback на .txt если Pillow не установлен
+- Цветной вывод через `chafa` (опционально)
+
+---
+
+### Текущее состояние (3 мая 2026)
+
+**Статус:** scaffolding завершён, CLI работает, агенты описаны. Pipeline не подключен к API.
+
+**Что работает:**
+- `matoi roster list` — таблица 14 агентов с Rich-рендерингом
+- `matoi roster show <slug>` — карточка агента с pixel-art аватаром
+- `matoi team create` — интерактивный выбор PM с галереей
+- `matoi team show` — вывод команды с аватаром PM и таблицей агентов
+- `matoi task run` — проверка API key с понятной ошибкой
+- Registry парсит .md файлы с YAML frontmatter
+- Pydantic модели: Agent, Team, Task, Session, Cost, Budget
+- Model router: Haiku/Sonnet/Opus маппинг
+- Cost tracker с budget enforcement
+- 8 тестов, все проходят
 
 **Что предстоит:**
-- Scaffolding проекта (folder structure, pyproject.toml)
-- Pydantic domain models
-- Agent registry schema
-- Team composition logic
-- Orchestrator и debate engine
-- CLI на Typer
-- MVP первого end-to-end pipeline
+- Подключить Anthropic API key
+- Реализовать MVP pipeline (brief → expert pass → synthesis)
+- Artifact writer (сохранение результатов в файлы)
+- Conflict detection и debate engine
+- GitHub репозиторий
+
+**Git-история (5 коммитов):**
+```
+63b7853 Add 14 custom pixel-art avatars, auto-resize PNG to Braille
+25019d9 Add API key check for matoi run, implement matoi team show
+ead0ba9 Add 10 agents: executors, thinkers, critics with Superpowers-inspired behaviors
+8105fd3 Rename project to Matoi (纏), implement CLI roster and team create
+755a4fd Initial scaffolding: project structure, domain models, CLI, agent registry
+```
 
 ---
 
@@ -172,18 +258,50 @@
 "Полная виртуальная стартап-команда
  с PM-оркестрацией, structured debate
  и cost-intelligent routing"
+       │
+       ▼
+"纏 Matoi — CLI-платформа с 14 агентами,  ← ренейминг + реализация
+ pixel-art персонажами и работающим CLI"
+```
+
+---
+
+## Структура проекта
+
+```
+matoi/
+├── src/matoi/              # Основной код (6 слоёв)
+│   ├── cli/                # CLI Layer (Typer + Rich)
+│   ├── core/               # Pydantic domain models
+│   ├── orchestrator/       # 7-stage pipeline, debate, conflict, synthesis
+│   ├── agents/             # Registry, runtime, activation
+│   ├── storage/            # Artifacts, sessions, costs
+│   └── gateway/            # Anthropic SDK, model router
+├── agents/                 # 14 агентов в .md (YAML frontmatter)
+│   ├── coordinators/       # 4 PM-агента
+│   ├── executors/          # Backend, Frontend, Designer, Marketer
+│   ├── thinkers/           # Researcher, Analyst, UX
+│   └── critics/            # Security, QA
+├── teams/                  # Team presets (.yaml) и сохранённые команды (.json)
+├── assets/avatars/         # 14 pixel-art PNG + Braille .txt
+├── artifacts/              # Выходные артефакты pipeline
+├── tests/                  # pytest (8 тестов)
+├── scripts/                # Генераторы аватаров
+└── docs/                   # Проектная документация
 ```
 
 ---
 
 ## Документы проекта
 
-| Документ | Назначение | Строк |
-|----------|-----------|-------|
-| `project_promt.md` | Детальная техническая спецификация (RU) | 502 |
-| `project_promt_for_claude.md` | Краткий бриф для Claude (EN) | 37 |
-| `project_description.md` | Executive summary | 33 |
-| `projects.md` | Анализ референсных проектов | 41 |
-| `research.md` | Ресёрч рынка, конкуренты, бизнес-модель | 142 |
-| `obsidian_claude_code_memory.md` | Гайд по Obsidian + Claude Code памяти | — |
-| `project_history.md` | Этот документ — история проекта | — |
+| Документ | Назначение |
+|----------|-----------|
+| `docs/project_promt.md` | Детальная техническая спецификация (RU) |
+| `docs/project_promt_for_claude.md` | Краткий бриф для Claude (EN) |
+| `docs/project_description.md` | Executive summary |
+| `docs/projects.md` | Анализ 11 референсных проектов |
+| `docs/research.md` | Ресёрч рынка, конкуренты, бизнес-модель |
+| `docs/obsidian_claude_code_memory.md` | Гайд по Obsidian + Claude Code памяти |
+| `docs/project_history.md` | Этот документ — история проекта |
+| `CLAUDE.md` | Инструкции для Claude Code |
+| `README.md` | Описание проекта |
