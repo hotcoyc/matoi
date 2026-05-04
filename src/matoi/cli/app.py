@@ -39,13 +39,18 @@ def main(
     if ctx.invoked_subcommand is not None:
         return
 
-    if classic:
-        from matoi.cli.session_repl import Session
-        session = Session()
-        session.start()
-    else:
-        from matoi.cli.fullscreen import run_fullscreen
-        run_fullscreen()
+    if not classic:
+        # Try fullscreen TUI, fallback to classic on error
+        try:
+            from matoi.cli.fullscreen import run_fullscreen
+            run_fullscreen()
+            return
+        except Exception:
+            pass
+
+    from matoi.cli.session_repl import Session
+    session = Session()
+    session.start()
 
 
 def _onboarding() -> None:

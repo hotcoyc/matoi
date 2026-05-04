@@ -1,6 +1,6 @@
 [project]
 name = "matoi"
-version = "0.1.6"
+version = "0.1.7"
 description = "Matoi (纏) — CLI platform where AI agents work as a full startup team"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -18,7 +18,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "mempalace>=3.3.0",
     "prompt_toolkit>=3.0.0",
-    "textual>=3.0.0",
+    "textual>=3.0.0,<9.0.0",
 ]
 
 [project.optional-dependencies]
