@@ -340,7 +340,9 @@ class Session:
         console.print()
 
     def _call_agent(self, agent: AgentDefinition, stage: str, user_msg: str) -> str:
-        """Call an agent with streaming, then render as markdown."""
+        """Call an agent with live markdown rendering."""
+        from rich.live import Live
+
         model_id = self.router.resolve_model(agent, stage)
 
         system = (
@@ -354,16 +356,18 @@ class Session:
 
         from matoi.core.cost import CostRecord
 
-        # Stream raw text for live feedback
-        for chunk in self.provider.stream(model_id, system, user_msg):
-            if isinstance(chunk, CostRecord):
-                cost = chunk
-            else:
-                console.print(chunk, end="", highlight=False)
-                full_text += chunk
+        # Stream and render markdown live
+        with Live(Markdown(""), console=console, refresh_per_second=4) as live:
+            for chunk in self.provider.stream(model_id, system, user_msg):
+                if isinstance(chunk, CostRecord):
+                    cost = chunk
+                else:
+                    full_text += chunk
+                    try:
+                        live.update(Markdown(full_text))
+                    except Exception:
+                        live.update(full_text)
 
-        # Clear streaming output and re-render as markdown
-        console.print()
         console.print()
 
         if cost:

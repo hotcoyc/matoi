@@ -316,27 +316,31 @@ def _stream_call(
     user_msg: str,
     label: str = "",
 ) -> tuple[str, "CostRecord"]:
-    """Stream an LLM call with live output. Returns (full_text, cost)."""
+    """Stream an LLM call with live markdown rendering. Returns (full_text, cost)."""
+    from rich.live import Live
+    from rich.markdown import Markdown
+
     from matoi.core.cost import CostRecord
 
     console.print(f"  [bold]{label}[/bold]")
-    console.print()
 
     full_text = ""
     cost = None
 
-    for chunk in provider.stream(model_id, system, user_msg):
-        if isinstance(chunk, CostRecord):
-            cost = chunk
-        else:
-            console.print(chunk, end="", highlight=False)
-            full_text += chunk
+    with Live(Markdown(""), console=console, refresh_per_second=4) as live:
+        for chunk in provider.stream(model_id, system, user_msg):
+            if isinstance(chunk, CostRecord):
+                cost = chunk
+            else:
+                full_text += chunk
+                try:
+                    live.update(Markdown(full_text))
+                except Exception:
+                    live.update(full_text)
 
-    console.print()  # newline after stream
     console.print()
 
     if cost is None:
-        # Fallback — shouldn't happen
         cost = CostRecord(
             agent_slug="", stage="",
             model_tier=provider._infer_tier(model_id),
