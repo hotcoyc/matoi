@@ -121,15 +121,9 @@ class MVPPipeline:
 
         # ── Cost summary ──
         cost_summary = self.cost_tracker.summary()
-        cost_text = (
-            f"Total cost: ${cost_summary['total_cost_usd']}\n"
-            f"API calls: {cost_summary['total_calls']}\n"
-            f"Premium calls: {cost_summary['premium_calls']}\n"
-            f"Budget remaining: ${cost_summary['budget_remaining_usd']}"
-        )
         (session_dir / "cost.json").write_text(json.dumps(cost_summary, indent=2))
         console.print()
-        console.print(Panel(cost_text, title="Cost", border_style="dim"))
+        _render_cost_table(cost_summary)
 
         # ── Index artifacts into MemPalace ──
         if self.memory:
@@ -258,3 +252,46 @@ def _type_icon(agent: AgentDefinition) -> str:
         "critic": "[CRT]",
     }
     return icons.get(agent.agent_type.value, "")
+
+
+def _render_cost_table(cost_summary: dict) -> None:
+    """Render a detailed cost breakdown table."""
+    from rich.table import Table
+
+    breakdown = cost_summary.get("breakdown", [])
+
+    table = Table(title="Cost Breakdown", border_style="dim", show_lines=False)
+    table.add_column("Agent", style="bold", min_width=18)
+    table.add_column("Stage", width=12)
+    table.add_column("Model", width=28)
+    table.add_column("In tokens", justify="right", width=10)
+    table.add_column("Out tokens", justify="right", width=10)
+    table.add_column("Cost", justify="right", style="yellow", width=10)
+
+    for row in breakdown:
+        model_short = row["model"].replace("claude-", "").replace("-20251001", "")
+        table.add_row(
+            row["agent"],
+            row["stage"],
+            model_short,
+            f"{row['input_tokens']:,}",
+            f"{row['output_tokens']:,}",
+            f"${row['cost_usd']:.4f}",
+        )
+
+    # Totals row
+    table.add_section()
+    table.add_row(
+        "[bold]Total[/bold]",
+        "",
+        f"{cost_summary['total_calls']} calls",
+        f"{sum(r['input_tokens'] for r in breakdown):,}",
+        f"{sum(r['output_tokens'] for r in breakdown):,}",
+        f"[bold]${cost_summary['total_cost_usd']:.4f}[/bold]",
+    )
+
+    console.print(table)
+    console.print(
+        f"  [dim]Budget remaining: ${cost_summary['budget_remaining_usd']:.4f} "
+        f"| Tokens: {cost_summary.get('total_tokens', 0):,}[/dim]"
+    )

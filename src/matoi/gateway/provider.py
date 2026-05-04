@@ -1,8 +1,9 @@
-"""Anthropic SDK wrapper."""
+"""Anthropic SDK wrapper with cost calculation."""
 
 import anthropic
 
 from matoi.core.cost import CostRecord, ModelTier
+from matoi.gateway.router import calculate_cost
 
 
 class AnthropicProvider:
@@ -26,14 +27,20 @@ class AnthropicProvider:
             messages=[{"role": "user", "content": user_message}],
         )
 
+        input_tokens = message.usage.input_tokens
+        output_tokens = message.usage.output_tokens
+        input_cost, output_cost = calculate_cost(model_id, input_tokens, output_tokens)
+
         tier = self._infer_tier(model_id)
         cost = CostRecord(
             agent_slug="",  # caller fills this in
             stage="",       # caller fills this in
             model_tier=tier,
             model_id=model_id,
-            input_tokens=message.usage.input_tokens,
-            output_tokens=message.usage.output_tokens,
+            input_tokens=input_tokens,
+            output_tokens=output_tokens,
+            input_cost=input_cost,
+            output_cost=output_cost,
         )
 
         return message.content[0].text, cost
