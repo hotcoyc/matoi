@@ -12,6 +12,7 @@ from matoi.cli.team import team_app
 from matoi.cli.task import task_app
 from matoi.cli.session import session_app
 from matoi.cli.memory import memory_app
+from matoi.cli.viz import viz_app
 
 console = Console()
 
@@ -26,6 +27,7 @@ app.add_typer(team_app, name="team", help="Compose and manage your team.")
 app.add_typer(task_app, name="task", help="Run tasks with your team.")
 app.add_typer(session_app, name="session", help="View sessions, artifacts, and costs.")
 app.add_typer(memory_app, name="memory", help="Browse and search the knowledge graph.")
+app.add_typer(viz_app, name="viz", help="Project visualizations (graph, 3D city).")
 
 
 @app.callback(invoke_without_command=True)
