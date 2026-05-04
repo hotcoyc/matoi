@@ -91,6 +91,9 @@ def _onboarding() -> None:
     if scan.file_tree:
         console.print(Panel(scan.file_tree, title="[dim]Structure[/dim]", border_style="dim"))
 
+    # ── Step 2b: Build code graph ──
+    _build_code_graph(cwd)
+
     # ── Step 3: Assemble Team ──
     console.print()
     console.print("[bold]Step 3:[/bold] Assemble your team\n")
@@ -179,6 +182,54 @@ def _onboarding() -> None:
     console.print()
     console.print("  Now you can run:")
     console.print(f'  [bold]matoi run "your task description"[/bold]')
+    console.print()
+
+
+def _build_code_graph(cwd: Path) -> None:
+    """Build code-review-graph and generate visualization."""
+    import shutil
+    import subprocess
+
+    if not shutil.which("code-review-graph"):
+        console.print("[dim]  code-review-graph not found, skipping graph build.[/dim]\n")
+        return
+
+    console.print()
+    console.print("[bold]Building code graph...[/bold]")
+
+    try:
+        result = subprocess.run(
+            ["code-review-graph", "build"],
+            cwd=cwd,
+            capture_output=True, text=True, timeout=60,
+        )
+        if result.returncode == 0:
+            # Extract stats from output
+            for line in result.stderr.splitlines() + result.stdout.splitlines():
+                if "nodes" in line and "edges" in line:
+                    console.print(f"  [green]✓ {line.strip()}[/green]")
+                    break
+            else:
+                console.print("  [green]✓ Code graph built[/green]")
+
+            # Generate visualization
+            viz_result = subprocess.run(
+                ["code-review-graph", "visualize"],
+                cwd=cwd,
+                capture_output=True, text=True, timeout=30,
+            )
+            if viz_result.returncode == 0:
+                graph_html = cwd / ".code-review-graph" / "graph.html"
+                if graph_html.exists():
+                    console.print(f"  [green]✓ 3D graph: {graph_html}[/green]")
+                    console.print("  [dim]Open in browser to explore your codebase visually[/dim]")
+        else:
+            console.print(f"  [yellow]Graph build failed: {result.stderr[:100]}[/yellow]")
+    except FileNotFoundError:
+        console.print("[dim]  code-review-graph not available.[/dim]")
+    except subprocess.TimeoutExpired:
+        console.print("[yellow]  Graph build timed out.[/yellow]")
+
     console.print()
 
 

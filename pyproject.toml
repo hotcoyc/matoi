@@ -29,6 +29,9 @@ viz = [
     "drawille>=0.2.0",
     "ascii-magic>=2.3.0",
 ]
+graph = [
+    "code-review-graph>=2.3.0",
+]
 
 [project.scripts]
 matoi = "matoi.cli.app:app"
