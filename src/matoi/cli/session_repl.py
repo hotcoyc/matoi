@@ -198,27 +198,13 @@ class Session:
         self._show_pm_avatar()
 
     def _show_pm_avatar(self) -> None:
-        """Show selected PM with small avatar."""
+        """Show selected PM with inline image or text fallback."""
         if not self.pm:
             return
-        from matoi.cli.team import PM_COLORS
-        color = PM_COLORS.get(self.pm.slug, "white")
-        avatar = load_avatar(self.pm.slug, width_chars=12)
-
-        lines = []
-        if avatar:
-            lines.append(avatar.strip())
-            lines.append("")
-        lines.append(f"[bold]{self.pm.name}[/bold]")
-        lines.append(f'[italic]"{self.pm.motto}"[/italic]')
-
+        from matoi.cli.common import display_avatar
         console.print()
-        console.print(Panel(
-            "\n".join(lines),
-            border_style=color,
-            width=30,
-            padding=(0, 1),
-        ))
+        display_avatar(self.pm.slug, width=8)
+        console.print(f"  [bold]{self.pm.name}[/bold] -- \"{self.pm.motto}\"")
 
     def _manual_team_selection(self) -> None:
         """Let user pick agents manually."""

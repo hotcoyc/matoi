@@ -53,6 +53,24 @@ def get_registry() -> AgentRegistry:
     return registry
 
 
+def display_avatar(slug: str, width: int = 10) -> None:
+    """Display avatar as inline image (Warp/iTerm2) or fallback to Braille."""
+    import sys
+
+    assets_dir = _find_assets_dir()
+    png_path = assets_dir / "avatars" / f"{slug}.png"
+
+    if png_path.exists() and _supports_inline_images():
+        _display_inline_image(png_path, width=width)
+        return
+
+    # Fallback to Braille
+    text = load_avatar(slug, width_chars=width)
+    if text:
+        from rich.console import Console
+        Console().print(text)
+
+
 def load_avatar(slug: str, width_chars: int = 30) -> str | None:
     """Load avatar as Braille art from PNG, resized to fit terminal panel."""
     assets_dir = _find_assets_dir()
@@ -68,6 +86,35 @@ def load_avatar(slug: str, width_chars: int = 30) -> str | None:
     if txt_path.exists():
         return txt_path.read_text()
     return None
+
+
+def _supports_inline_images() -> bool:
+    """Check if terminal supports inline images (Warp, iTerm2, Kitty)."""
+    import os
+    term = os.environ.get("TERM_PROGRAM", "")
+    warp = os.environ.get("WARP_HONOR_PS1", "")
+    term_env = os.environ.get("TERM", "")
+    return (
+        "WarpTerminal" in term
+        or bool(warp)
+        or "iTerm" in term
+        or "kitty" in term_env
+    )
+
+
+def _display_inline_image(path: Path, width: int = 10) -> None:
+    """Display image inline using iTerm2/Warp image protocol."""
+    import base64
+    import sys
+
+    data = path.read_bytes()
+    b64 = base64.b64encode(data).decode("ascii")
+
+    # iTerm2 inline image protocol (also supported by Warp)
+    osc = f"\033]1337;File=inline=1;width={width};preserveAspectRatio=1:{b64}\a"
+    sys.stdout.write(osc)
+    sys.stdout.write("\n")
+    sys.stdout.flush()
 
 
 def _png_to_braille(path: Path, width_chars: int = 30) -> str:
