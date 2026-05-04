@@ -4,43 +4,67 @@ from pathlib import Path
 
 from matoi.agents.registry import AgentRegistry
 
-# Package root — where agents/, assets/ are installed with the matoi package
+# Package directory — where bundled_agents/, bundled_assets/ live inside installed package
 _CLI_DIR = Path(__file__).resolve().parent
-_PACKAGE_ROOT = _CLI_DIR.parent.parent.parent  # src/matoi/cli -> matoi repo root
+_PACKAGE_DIR = _CLI_DIR.parent  # src/matoi/cli -> src/matoi
+_REPO_ROOT = _PACKAGE_DIR.parent.parent  # src/matoi -> repo root (for dev mode)
+
+
+def _find_agents_dir() -> Path:
+    """Find agents directory: bundled (pip install) or repo (dev mode)."""
+    # 1. Bundled inside package (pip install / pipx)
+    bundled = _PACKAGE_DIR / "bundled_agents"
+    if bundled.exists():
+        return bundled
+    # 2. Repo root (editable install / dev)
+    repo = _REPO_ROOT / "agents"
+    if repo.exists():
+        return repo
+    # 3. Fallback
+    return bundled
+
+
+def _find_assets_dir() -> Path:
+    """Find assets directory: bundled (pip install) or repo (dev mode)."""
+    bundled = _PACKAGE_DIR / "bundled_assets"
+    if bundled.exists():
+        return bundled
+    repo = _REPO_ROOT / "assets"
+    if repo.exists():
+        return repo
+    return bundled
 
 
 def get_package_root() -> Path:
-    """Return the matoi package root (where agents/, assets/ live)."""
-    return _PACKAGE_ROOT
+    """Return the matoi package root."""
+    return _PACKAGE_DIR
 
 
 def get_project_root() -> Path:
-    """Return the matoi package root (backward compat)."""
-    return _PACKAGE_ROOT
+    """Return the repo root (backward compat for dev mode)."""
+    return _REPO_ROOT
 
 
 def get_registry() -> AgentRegistry:
     """Load and return the agent registry."""
-    agents_dir = get_project_root() / "agents"
+    agents_dir = _find_agents_dir()
     registry = AgentRegistry(agents_dir)
     registry.load_all()
     return registry
 
 
 def load_avatar(slug: str, width_chars: int = 30) -> str | None:
-    """Load avatar as Braille art from PNG, resized to fit terminal panel.
+    """Load avatar as Braille art from PNG, resized to fit terminal panel."""
+    assets_dir = _find_assets_dir()
 
-    Each Braille char = 2x4 pixels, so width_chars=30 means 60px wide.
-    Falls back to .txt if PNG not found or Pillow not installed.
-    """
-    png_path = get_project_root() / "assets" / "avatars" / f"{slug}.png"
+    png_path = assets_dir / "avatars" / f"{slug}.png"
     if png_path.exists():
         try:
             return _png_to_braille(png_path, width_chars)
         except Exception:
             pass
 
-    txt_path = get_project_root() / "assets" / "avatars" / f"{slug}.txt"
+    txt_path = assets_dir / "avatars" / f"{slug}.txt"
     if txt_path.exists():
         return txt_path.read_text()
     return None

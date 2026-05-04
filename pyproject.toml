@@ -1,6 +1,6 @@
 [project]
 name = "matoi"
-version = "0.1.0"
+version = "0.1.1"
 description = "Matoi (纏) — CLI platform where AI agents work as a full startup team"
 readme = "README.md"
 requires-python = ">=3.11"
@@ -43,6 +43,10 @@ build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/matoi"]
+
+[tool.hatch.build.targets.wheel.force-include]
+"agents" = "matoi/bundled_agents"
+"assets" = "matoi/bundled_assets"
 
 [tool.ruff]
 target-version = "py311"
