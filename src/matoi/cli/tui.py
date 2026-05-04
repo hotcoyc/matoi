@@ -40,6 +40,7 @@ COMMANDS = [
     "/team",
     "/cost",
     "/commit",
+    "/key",
     "/quit",
     "/exit",
     "/history",

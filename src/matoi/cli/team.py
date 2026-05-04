@@ -234,7 +234,7 @@ def _render_pm_gallery(coordinators: list[AgentDefinition]) -> None:
 
     for i, pm in enumerate(coordinators):
         color = PM_COLORS.get(pm.slug, "white")
-        avatar = load_avatar(pm.slug) or ""
+        avatar = load_avatar(pm.slug, width_chars=18) or ""
 
         content_lines = [
             avatar.strip(),
@@ -244,7 +244,6 @@ def _render_pm_gallery(coordinators: list[AgentDefinition]) -> None:
             "",
             f"  Risk:   {_risk_bar(pm.risk_tolerance)}",
             f"  Debate: {pm.debate_style}",
-            f"  Focus:  {pm.collaboration_preferences[0] if pm.collaboration_preferences else '—'}",
         ]
 
         panels.append(
@@ -252,7 +251,7 @@ def _render_pm_gallery(coordinators: list[AgentDefinition]) -> None:
                 "\n".join(content_lines),
                 title=f"[{color}][{i + 1}][/{color}]",
                 border_style=color,
-                width=38,
+                width=28,
                 padding=(0, 1),
             )
         )

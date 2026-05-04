@@ -51,6 +51,7 @@ COMMANDS = {
     "/cost": "Show session cost so far",
     "/history": "Show tasks run in this session",
     "/commit": "Review changes, debate, commit",
+    "/key": "Change API key",
     "/quit": "End session (Ctrl+D)",
 }
 
@@ -130,22 +131,40 @@ class Session:
         self._repl(goal)
 
     def _ensure_api_key(self) -> None:
-        """Check API key, prompt if missing."""
+        """Check API key, prompt if missing or invalid."""
         key = require_api_key()
-        if not key:
-            console.print("  API key not found.\n")
-            console.print("  Get your key at: https://console.anthropic.com/settings/keys\n")
-            key = Prompt.ask("  API Key", password=True)
-            if not key.strip():
-                console.print("[red]API key is required.[/red]")
-                raise SystemExit(1)
-            config = load_global_config()
-            config.anthropic_api_key = key.strip()
-            save_global_config(config)
-            os.environ["ANTHROPIC_API_KEY"] = key.strip()
-            console.print("  [green]Saved.[/green]\n")
-        else:
-            console.print("  [dim]API key: ok[/dim]")
+
+        if key:
+            # Validate the key with a cheap test call
+            try:
+                import anthropic
+                client = anthropic.Anthropic(api_key=key)
+                client.messages.create(
+                    model="claude-haiku-4-5-20251001",
+                    max_tokens=1,
+                    messages=[{"role": "user", "content": "hi"}],
+                )
+                console.print("  [dim]API key: ok[/dim]")
+                return
+            except anthropic.AuthenticationError:
+                console.print("  [yellow]API key is invalid or expired.[/yellow]\n")
+                key = ""
+            except Exception:
+                # Network error etc -- assume key is ok, will fail later if not
+                console.print("  [dim]API key: found (not verified)[/dim]")
+                return
+
+        # Ask for key
+        console.print("  Get your key at: https://console.anthropic.com/settings/keys\n")
+        key = Prompt.ask("  API Key", password=True)
+        if not key.strip():
+            console.print("[red]API key is required.[/red]")
+            raise SystemExit(1)
+        config = load_global_config()
+        config.anthropic_api_key = key.strip()
+        save_global_config(config)
+        os.environ["ANTHROPIC_API_KEY"] = key.strip()
+        console.print("  [green]Saved.[/green]\n")
 
     def _pick_pm(self) -> None:
         """Interactive PM selection."""
@@ -264,6 +283,8 @@ class Session:
                     self._show_agents()
                 elif cmd == "/history":
                     self._show_history()
+                elif cmd == "/key":
+                    self._change_key()
                 else:
                     console.print(f"  [dim]Unknown: {cmd}. Type /help[/dim]")
                 continue
@@ -511,6 +532,20 @@ class Session:
         for i, h in enumerate(self.history, 1):
             console.print(f"  {i}. {h['task'][:60]} ({h['timestamp'][:16]})")
         console.print()
+
+    def _change_key(self) -> None:
+        """Change API key."""
+        console.print("\n  Get your key at: https://console.anthropic.com/settings/keys\n")
+        key = Prompt.ask("  New API Key", password=True)
+        if key.strip():
+            config = load_global_config()
+            config.anthropic_api_key = key.strip()
+            save_global_config(config)
+            os.environ["ANTHROPIC_API_KEY"] = key.strip()
+            self.provider = AnthropicProvider()
+            console.print("  [green]API key updated.[/green]\n")
+        else:
+            console.print("  [dim]Cancelled.[/dim]\n")
 
     def _show_help(self) -> None:
         console.print()
