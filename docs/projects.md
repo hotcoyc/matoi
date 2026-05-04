@@ -1,62 +1,114 @@
-# GitHub Projects
+# Используемые проекты
 
-## 1. [Superpowers](https://github.com/obra/superpowers)
-**"An agentic skills framework & software development methodology that works."**
+Сторонние open-source проекты, интегрированные в Matoi.
 
-Комплексная система для coding-агентов, которая направляет их через структурированные рабочие процессы разработки вместо прямого погружения в код. Объединяет компонуемые навыки с автоматическим запуском лучших практик (TDD, систематическая отладка, совместное планирование) для автономной работы агентов над сложными проектами с поддержанием качества кода.
+---
 
-## 2. [Anthropic Skills](https://github.com/anthropics/skills/tree/main/skills)
-**Коллекция навыков и инструментов для Claude от Anthropic**
+## [MemPalace](https://github.com/mempalace/mempalace) -- память агентов
 
-Курируемый набор из 17+ специализированных модулей расширяющих возможности Claude: интеграция с API, обработка документов (PDF, DOCX, PPTX, XLSX), инструменты дизайна (canvas, frontend, theme factory), утилиты (MCP builder, web artifacts builder, skill creator). Модульная и переиспользуемая архитектура.
+**Что:** Иерархическая система памяти для AI-агентов. ChromaDB + SQLite, семантический поиск (96.6% recall), knowledge graph с темпоральными тройками.
 
-## 3. [claude-mem](https://github.com/thedotmack/claude-mem)
-**"Persistent memory compression system for Claude Code"**
+**Как используем:**
+- Память между сессиями -- артефакты pipeline индексируются автоматически
+- 433 drawers проекта загружены (код, docs, agents)
+- 29 MCP-инструментов для Claude Code
+- Auto-save hooks (Stop, PreCompact)
+- Knowledge graph для связей между решениями
+- Python API: `MemoryStack`, `search_memories()`, `KnowledgeGraph`
 
-Плагин для Claude Code, автоматически захватывающий все действия во время сессий, сжимающий их с помощью AI и внедряющий релевантный контекст в будущие сессии. Записывает наблюдения, генерирует семантические сводки и извлекает нужный контекст через интеллектуальный поиск.
+**Лицензия:** MIT | **Stars:** ~51K
 
-## 4. [gstack](https://github.com/garrytan/gstack)
-**"Use Garry Tan's exact Claude Code setup: 23 opinionated tools that serve as CEO, Designer, Eng Manager, Release Manager, Doc Engineer, and QA"**
+---
 
-Open-source "фабрика ПО", превращающая Claude Code в виртуальную инженерную команду через специализированных AI-агентов. Оркестрирует полный цикл разработки — от стратегического планирования и дизайна до имплементации, ревью, тестирования и деплоя — через slash-команды и Markdown-коллаборацию.
+## [code-review-graph](https://github.com/tirth8205/code-review-graph) -- навигация AI по коду
 
-## 5. [GitNexus](https://github.com/abhigyanpatwari/GitNexus)
-**"The Zero-Server Code Intelligence Engine"**
+**Что:** Граф знаний кодовой базы через Tree-sitter. Строит карту: файлы, функции, классы, зависимости, вызовы.
 
-Клиентский движок knowledge graph, работающий целиком в браузере или через CLI. Индексирует кодовые базы в интерактивные графы знаний, отслеживающие зависимости, цепочки вызовов и потоки выполнения. Интеграция с AI-агентами (Claude Code, Cursor) через MCP для архитектурного анализа, планирования рефакторинга и impact-анализа.
+**Как используем:**
+- 210 nodes, 1317 edges нашего проекта
+- 28 MCP-инструментов для Claude Code (query_graph, detect_changes, get_impact_radius, semantic_search)
+- Auto-update через git pre-commit hook и PostToolUse hook
+- HTML-визуализация: `matoi viz graph`
+- Экономия токенов 6.8-49x vs чтение файлов целиком
 
-## 6. [cpr-compress-preserve-resume](https://github.com/EliaAlberti/cpr-compress-preserve-resume/tree/main)
-**"Persistent memory for Claude Code. Save, search, and restore conversation context across sessions."**
+**Лицензия:** MIT | **Stars:** ~15K
 
-Три кастомных навыка (/preserve, /compress, /resume), обеспечивающих сохранение контекста между сессиями Claude Code. Позволяют сохранять ключевые выводы в CLAUDE.md, захватывать полные логи сессий для поиска и восстанавливать предыдущий контекст при начале новых разговоров.
+---
 
-## 7. [claude-knowledge-graph](https://github.com/NAMYUNWOO/claude-knowledge-graph)
-**"Auto-capture Claude Code Q&A -> Qwen 3.5 tagging/summarization -> Obsidian knowledge graph"**
+## [CodeCharta](https://github.com/MaibornWolff/codecharta) -- 3D визуализация
 
-Инструмент автоматического захвата диалогов из Claude Code с обработкой через локальную LLM (Qwen 3.5 4B) для генерации тегированных и суммаризованных заметок в Obsidian vault. Создает связанный граф знаний с концептуальными связями, семантическим поиском и профилированием разработчика. Все данные обрабатываются локально.
+**Что:** Визуализация кода как 3D-город. Файлы = здания (высота = сложность, площадь = строки кода), папки = районы.
 
-## 8. [gitVis3D](https://github.com/kofujimura/gitVis3D)
-**"3D Visualization of Git Repository"**
+**Как используем:**
+- `matoi viz city` -- генерирует `.cc.json.gz` и открывает viewer
+- `matoi viz build` -- пересборка при онбординге
+- Визуальный обзор архитектуры для новых участников
 
-Инструмент визуализации истории коммитов git-репозитория в виде анимированных 3D-графов, отображающих связи вкладов и обновлений как узлы и ребра, появляющиеся последовательно во времени. Получает данные коммитов через GitHub API и хранит графы в Neo4j.
+**Требует:** Java 17+, npm | **Лицензия:** BSD-3 | **Stars:** ~411
 
-## 9. [code-review-graph](https://github.com/tirth8205/code-review-graph)
-**"Persistent code knowledge graph for Claude Code"** (~15K stars)
+---
 
-Локальный граф знаний кодовой базы для Claude Code. Строит persistent карту проекта через Tree-sitter: файлы, функции, классы, зависимости, цепочки вызовов. Отслеживает изменения инкрементально — при каждом изменении обновляется только затронутая часть графа. Агент читает только то, что реально нужно — доказанная экономия токенов в 6.8x на ревью и до 49x на ежедневных задачах (с 739K до 15K токенов). Интеграция через MCP — Claude Code получает инструменты для навигации по графу вместо чтения файлов целиком.
+## [Superpowers](https://github.com/obra/superpowers) -- поведенческие паттерны агентов
 
-**Роль в платформе:** навигация AI-агентов по кодовой базе проекта, экономия токенов при анализе кода, структурированный контекст для Engineering-агентов (Backend/Frontend Engineer, DevOps) и Critics (Security Reviewer, QA Strategist).
+**Что:** Agentic skills framework с Iron Laws, self-review checklists, escalation rules.
 
-## 10. [CodeCharta](https://github.com/MaibornWolff/codecharta)
-**"Interactive visualization of code as a 3D city"** (~411 stars)
+**Как используем:**
+- Вдохновение для поведенческих описаний 17 агентов Matoi
+- Протоколы из Superpowers адаптированы:
+  - TDD discipline (Backend Engineer)
+  - "No fixes without root cause" (Systematic Debugger -> QA)
+  - Distrustful verification (Spec Compliance -> QA Strategist)
+  - "Design before code" (Brainstormer -> Product Designer)
+  - Anti-sycophancy (Code Review Recipient -> all Critics)
 
-Визуализация архитектуры ПО в виде интерактивного 3D-города: файлы = здания (высота = сложность, цвет = покрытие тестами, площадь = строки кода), папки = районы. Поддерживает сравнение двух карт для визуализации дельты изменений. Импорт метрик из SonarQube, токклаков (tokei, cloc), git log, SVN. Экспорт в JSON и 3D-модель (можно напечатать на 3D-принтере).
+**Лицензия:** MIT | **Stars:** ~165K
 
-**Роль в платформе:** визуальный обзор архитектуры проекта для Design & Product и Strategy & Business агентов, отслеживание эволюции кодовой базы, выявление hotspots (сложные/часто меняющиеся файлы) для QA Strategist и Backend Architect.
+---
 
-## 11. [Repomix](https://github.com/yamadashy/repomix)
-**"Pack your entire repository into a single, AI-friendly file"** (~23K stars)
+## [Anthropic Python SDK](https://github.com/anthropics/anthropic-sdk-python) -- LLM gateway
 
-CLI-инструмент, упаковывающий весь репозиторий в один структурированный файл, оптимизированный для LLM. Smart token compression с сохранением структуры проекта — дерево файлов, содержимое с разделителями, метаданные. Поддержка форматов вывода: XML, Markdown, Plain text. Встроенная фильтрация по .gitignore, настраиваемые include/exclude паттерны, подсчёт токенов. Есть веб-интерфейс, Chrome-расширение и MCP-сервер.
+**Что:** Официальный SDK для Claude API.
 
-**Роль в платформе:** быстрая передача полного контекста проекта AI-агентам при первичном анализе — Research-агенты (Market Researcher, Competitive Analyst) и Strategy-агенты (CEO/Visionary, Business Analyst) получают snapshot всего проекта одним файлом для понимания текущего состояния. PM-агенты используют для формирования brief с учётом реальной кодовой базы.
+**Как используем:**
+- `client.messages.create()` -- non-streaming calls (conflict detection, activation)
+- `client.messages.stream()` -- streaming calls (brief, expert pass, synthesis)
+- Cost tracking через `message.usage.input_tokens/output_tokens`
+- Error handling: retry на rate limits (429), connection errors, server errors (5xx), overloaded (529)
+
+---
+
+## [prompt_toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit) -- TUI
+
+**Что:** Библиотека для интерактивных CLI с автокомплитом, историей, keybindings.
+
+**Как используем:**
+- Интерактивная REPL-сессия `matoi`
+- Цветной промпт `[project/PM] >` (зелёный/жёлтый)
+- Tab-автокомплит: `/commands` и `@agents` (fuzzy)
+- Persistent history `~/.matoi/history`
+- Bottom status bar: PM, team, tokens, cost
+- Keybindings: Ctrl+C, Ctrl+D, Ctrl+L, Alt+Enter
+
+---
+
+## [Rich](https://github.com/Textualize/rich) -- terminal rendering
+
+**Что:** Библиотека для красивого вывода в терминал.
+
+**Как используем:**
+- Rich Markdown: live rendering ответов агентов (заголовки, списки, код)
+- Rich Live: обновление markdown при streaming
+- Rich Table: таблицы агентов, cost breakdown, team list
+- Rich Panel: карточки агентов, аватары
+- Rich Console: цветной вывод, rule-разделители
+
+---
+
+## [Pillow](https://github.com/python-pillow/Pillow) -- pixel-art аватары
+
+**Что:** Библиотека обработки изображений.
+
+**Как используем:**
+- Конвертация pixel-art PNG (128x128) в Braille Unicode для терминала
+- Автоматический ресайз до 30 символов ширины
+- 17 аватаров агентов

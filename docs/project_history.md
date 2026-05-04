@@ -342,53 +342,40 @@ matoi                # запуск → онбординг
 
 ---
 
+### Фаза 18: Error handling, history, тесты (4 мая 2026)
+
+- **Error handling:** retry с backoff на rate limits (429), connection errors, server errors (5xx), overloaded (529). Auth errors -- immediate fail. REPL ловит все ошибки, сессия не падает.
+- **matoi history** -- просмотр прошлых сессий, markdown-рендер артефактов, cost breakdown
+- **33 теста** (было 8): cost tracker, model router, pricing, config, scanner, conflict, debate, activation, registry
+
+---
+
 ### Текущее состояние (4 мая 2026)
 
-**Статус:** полноценный MVP с интерактивной сессией, 6-стадийным pipeline, дебатами, памятью, визуализацией и TUI.
+**Статус:** полноценный MVP. 30 коммитов, 33 теста, 17 агентов.
 
 **Что работает:**
-- `matoi` -- интерактивная REPL-сессия с TUI (prompt_toolkit)
+- `matoi` -- интерактивная REPL с TUI (prompt_toolkit, autocomplete, history, status bar)
 - `matoi run "task"` -- one-shot pipeline
+- `matoi history` -- просмотр сессий и артефактов
 - `matoi cost` -- стоимость по сессиям и моделям
 - `matoi roster list/show` -- 17 агентов с pixel-art аватарами
 - `matoi team create/show/list` -- команды
-- `matoi memory show/search/mine/wake-up` -- MemPalace
+- `matoi memory show/search/mine/wake-up` -- MemPalace (433 drawers)
 - `matoi viz graph/city/build/status` -- визуализации
 - 6-стадийный pipeline: activation, brief, expert, conflict, debate, synthesis
 - Streaming + live markdown rendering
-- Selective agent activation
+- Selective agent activation (PM рекомендует кого включить)
 - Pre-commit debate (/commit)
 - Real cost tracking ($1/$5, $3/$15, $15/$75)
+- Error handling с retry и graceful fallback
 - MemPalace auto-save hooks
-- code-review-graph MCP (28 tools)
-- 8 тестов, все проходят
+- code-review-graph MCP (28 tools, auto-update)
+- 33 теста, все проходят
 
 **Что предстоит:**
-- Error handling (network errors, rate limits)
 - GitHub repo + PyPI + Homebrew
-- Больше тестов (pipeline, conflict, debate)
-- `matoi history` -- browse past sessions
 - Agent marketplace
-
-**Git-история (28 коммитов):**
-```
-bf8f84e Complete Phase B: fuzzy autocomplete, prompt color states
-973f508 Add live markdown rendering for agent responses
-7c25cae Fix mempalace hook: use absolute path
-7345f44 Phase B: TUI with prompt_toolkit
-1879abd Replace one-shot pipeline with interactive REPL session
-3a8147c Update project description
-b198edf MVP polish: selective activation, 3 new agents, team list, cleanup
-bee115c Update docs: debate engine, streaming, MemPalace, cost tracking
-a8c47da Implement conflict detection + structured debate engine
-d9319eb Add streaming output to pipeline
-b82d8bc Implement matoi cost
-fd96a71 Add real cost tracking with per-token pricing
-9b7c575 Remove all emoji icons from CLI output
-...
-8105fd3 Rename project to Matoi (纏), implement CLI roster and team create
-755a4fd Initial scaffolding: project structure, domain models, CLI, agent registry
-```
 
 ---
 
