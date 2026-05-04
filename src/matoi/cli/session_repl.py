@@ -4,8 +4,8 @@ Flow:
 1. Pick PM (or use saved)
 2. Describe your goal
 3. PM recommends team
-4. REPL: user types tasks, agents respond (streaming)
-5. /commit → debate on changes → commit → update graph → show cost
+4. REPL: user types tasks, agents respond (streaming + markdown)
+5. /commit -> debate on changes -> commit -> update graph -> show cost
 """
 
 import json
@@ -15,13 +15,14 @@ from datetime import datetime
 from pathlib import Path
 
 from rich.console import Console
+from rich.markdown import Markdown
 from rich.panel import Panel
 from rich.prompt import Prompt
-from rich.rule import Rule
 from rich.table import Table
 
 from matoi.agents.registry import AgentRegistry
 from matoi.cli.common import get_package_root, get_registry, load_avatar
+from matoi.cli.tui import MatoiPrompt
 from matoi.core.agent import AgentDefinition
 from matoi.core.config import (
     GlobalConfig,
@@ -46,9 +47,11 @@ console = Console()
 COMMANDS = {
     "/help": "Show available commands",
     "/team": "Show current team",
+    "/agents": "Show all available agents",
     "/cost": "Show session cost so far",
-    "/commit": "Run debate on changes, commit, update graph",
-    "/quit": "End session",
+    "/history": "Show tasks run in this session",
+    "/commit": "Review changes, debate, commit",
+    "/quit": "End session (Ctrl+D)",
 }
 
 
@@ -63,16 +66,17 @@ class Session:
         self.pm: AgentDefinition | None = None
         self.agents: list[AgentDefinition] = []
         self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.history: list[dict] = []  # conversation history
+        self.history: list[dict] = []
         self.memory: MemoryStore | None = None
+        self.prompt: MatoiPrompt | None = None
 
     def start(self) -> None:
         """Main entry point for interactive session."""
         console.print()
         console.print(Panel(
             "[bold]Matoi[/bold] -- your startup team in the terminal.\n"
-            "Type your task. Agents will respond.\n"
-            "Type /help for commands, /quit to exit.",
+            "Type your task, agents will respond.\n"
+            "/help for commands, /commit before committing, /quit to exit.",
             border_style="bold white",
         ))
         console.print()
@@ -100,13 +104,27 @@ class Session:
         else:
             self._pick_pm()
 
-        # ── Describe goal → PM recommends team ──
+        # ── Initialize TUI prompt ──
+        agent_slugs = [a.slug for a in self.registry.list_all()]
+        self.prompt = MatoiPrompt(
+            project_name=Path.cwd().name,
+            pm_name=self.pm.name if self.pm else "",
+            agent_slugs=agent_slugs,
+        )
+
+        # ── Describe goal -> PM recommends team ──
         console.print()
-        goal = Prompt.ask("[bold]What are you working on today?[/bold]")
+        goal = self.prompt.ask_initial("What are you working on today?")
         console.print()
 
         if goal.strip():
             self._recommend_team(goal)
+
+        if self.prompt:
+            self.prompt.update_status(
+                team_size=len(self.agents),
+                pm_name=self.pm.name if self.pm else "",
+            )
 
         # ── REPL loop ──
         self._repl(goal)
@@ -214,15 +232,15 @@ class Session:
             self.agents = all_agents[:3]
 
     def _repl(self, initial_goal: str = "") -> None:
-        """Main REPL loop."""
+        """Main REPL loop with prompt_toolkit."""
         console.print()
-        console.rule("[dim]Session started. Type your tasks.[/dim]")
+        console.rule("[dim]Session started[/dim]")
         console.print()
 
         while True:
-            try:
-                user_input = Prompt.ask("[bold]>[/bold]")
-            except (KeyboardInterrupt, EOFError):
+            user_input = self.prompt.ask()
+
+            if user_input is None:  # Ctrl+D
                 break
 
             user_input = user_input.strip()
@@ -231,22 +249,35 @@ class Session:
 
             # ── Commands ──
             if user_input.startswith("/"):
-                if user_input == "/quit" or user_input == "/exit":
+                cmd = user_input.split()[0].lower()
+                if cmd in ("/quit", "/exit"):
                     break
-                elif user_input == "/help":
+                elif cmd == "/help":
                     self._show_help()
-                elif user_input == "/team":
+                elif cmd == "/team":
                     self._show_team()
-                elif user_input == "/cost":
+                elif cmd == "/cost":
                     self._show_cost()
-                elif user_input == "/commit":
+                elif cmd == "/commit":
                     self._commit_flow()
+                elif cmd == "/agents":
+                    self._show_agents()
+                elif cmd == "/history":
+                    self._show_history()
                 else:
-                    console.print(f"  [dim]Unknown command: {user_input}. Type /help[/dim]")
+                    console.print(f"  [dim]Unknown: {cmd}. Type /help[/dim]")
                 continue
 
             # ── Run task ──
             self._run_task(user_input)
+
+            # Update status bar
+            if self.prompt:
+                summary = self.cost_tracker.summary()
+                self.prompt.update_status(
+                    cost_usd=summary["total_cost_usd"],
+                    total_tokens=summary.get("total_tokens", 0),
+                )
 
         # ── Session end ──
         console.print()
@@ -309,7 +340,7 @@ class Session:
         console.print()
 
     def _call_agent(self, agent: AgentDefinition, stage: str, user_msg: str) -> str:
-        """Call an agent with streaming output."""
+        """Call an agent with streaming, then render as markdown."""
         model_id = self.router.resolve_model(agent, stage)
 
         system = (
@@ -323,6 +354,7 @@ class Session:
 
         from matoi.core.cost import CostRecord
 
+        # Stream raw text for live feedback
         for chunk in self.provider.stream(model_id, system, user_msg):
             if isinstance(chunk, CostRecord):
                 cost = chunk
@@ -330,6 +362,7 @@ class Session:
                 console.print(chunk, end="", highlight=False)
                 full_text += chunk
 
+        # Clear streaming output and re-render as markdown
         console.print()
         console.print()
 
@@ -441,6 +474,32 @@ class Session:
         # Show cost
         console.print()
         self._show_cost()
+
+    def _show_agents(self) -> None:
+        """Show all available agents."""
+        table = Table(border_style="dim", show_lines=False)
+        table.add_column("Slug", style="bold", min_width=22)
+        table.add_column("Name", min_width=20)
+        table.add_column("Type", width=8)
+
+        for a in sorted(self.registry.list_all(), key=lambda x: x.category.value):
+            active = "[green]*[/green] " if a in self.agents else "  "
+            table.add_row(f"{active}{a.slug}", a.name, a.agent_type.value)
+
+        console.print()
+        console.print(table)
+        console.print("  [dim]* = active in this session[/dim]")
+        console.print()
+
+    def _show_history(self) -> None:
+        """Show task history for this session."""
+        if not self.history:
+            console.print("  [dim]No tasks run yet.[/dim]")
+            return
+        console.print()
+        for i, h in enumerate(self.history, 1):
+            console.print(f"  {i}. {h['task'][:60]} ({h['timestamp'][:16]})")
+        console.print()
 
     def _show_help(self) -> None:
         console.print()
