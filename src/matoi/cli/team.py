@@ -247,7 +247,7 @@ def _render_team_summary(team: TeamConfig, pm: AgentDefinition) -> None:
 
     console.print(Panel(
         "\n".join(lines),
-        title="纏 Team Summary",
+        title="Team Summary",
         border_style=color,
     ))
 
@@ -283,7 +283,7 @@ def _render_team_full(
         )
         info_panel = Panel(
             "\n".join(pm_info),
-            title=f"[{color}]👔 PM[/{color}]",
+            title=f"[{color}]PM[/{color}]",
             border_style=color,
             expand=True,
             padding=(0, 1),
@@ -292,7 +292,7 @@ def _render_team_full(
         console.print(Columns([avatar_panel, info_panel], expand=True))
     else:
         console.print()
-        console.print(Panel("\n".join(pm_info), title=f"[{color}]👔 PM[/{color}]", border_style=color))
+        console.print(Panel("\n".join(pm_info), title=f"[{color}]PM[/{color}]", border_style=color))
 
     # ── Team members table ──
     if not team.agents:
@@ -302,10 +302,10 @@ def _render_team_full(
         return
 
     TYPE_ICONS = {
-        "coordinator": "👔",
-        "executor": "⚙️",
-        "thinker": "🧠",
-        "critic": "🔍",
+        "coordinator": "[PM]",
+        "executor": "[EXE]",
+        "thinker": "[THK]",
+        "critic": "[CRT]",
     }
 
     CATEGORY_STYLES = {
@@ -318,7 +318,7 @@ def _render_team_full(
     }
 
     table = Table(
-        title="纏 Team Members",
+        title="Team Members",
         title_style="bold white",
         border_style="dim",
         show_lines=True,

@@ -24,10 +24,10 @@ CATEGORY_STYLES = {
 }
 
 TYPE_ICONS = {
-    "coordinator": "👔",
-    "executor": "⚙️",
-    "thinker": "🧠",
-    "critic": "🔍",
+    "coordinator": "[PM]",
+    "executor": "[EXE]",
+    "thinker": "[THK]",
+    "critic": "[CRT]",
 }
 
 
@@ -51,7 +51,7 @@ def list_agents(
         raise typer.Exit()
 
     table = Table(
-        title="🏢 Agent Registry",
+        title="Agent Registry",
         title_style="bold white",
         border_style="dim",
         show_lines=True,
@@ -154,8 +154,8 @@ def _render_agent_card(agent: AgentDefinition) -> None:
     # Strengths & Weaknesses
     if agent.strengths or agent.weaknesses:
         sw_table = Table(show_header=True, border_style="dim", expand=True)
-        sw_table.add_column("✅ Strengths", style="green")
-        sw_table.add_column("⚠️  Weaknesses", style="yellow")
+        sw_table.add_column("[+] Strengths", style="green")
+        sw_table.add_column("[-] Weaknesses", style="yellow")
 
         max_len = max(len(agent.strengths), len(agent.weaknesses))
         for i in range(max_len):

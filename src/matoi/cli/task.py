@@ -93,7 +93,7 @@ def plan_task(
     pm_name = pm.name if pm else team_config.pm
 
     console.print()
-    console.print(Panel(f"[bold]{task}[/bold]", title="纏 Task (dry run)", border_style="yellow"))
+    console.print(Panel(f"[bold]{task}[/bold]", title="Task (dry run)", border_style="yellow"))
     console.print()
 
     table = Table(title="Pipeline Plan", border_style="dim")

@@ -93,7 +93,7 @@ class KnowledgeGraph(BaseModel):
 
         lines = ["## Previous Knowledge (from past sessions)\n"]
         for node in recent:
-            icon = {"decision": "🎯", "topic": "📌", "insight": "💡", "risk": "⚠️", "rejected": "❌"}.get(node.type.value, "•")
+            icon = {"decision": "[>]", "topic": "[~]", "insight": "[*]", "risk": "[!]", "rejected": "[-]"}.get(node.type.value, "[.]")
             lines.append(f"{icon} **{node.label}** ({node.type.value})")
             lines.append(f"   {node.content[:200]}")
             if node.tags:

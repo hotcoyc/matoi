@@ -69,7 +69,7 @@ def wake_up(
             capture_output=True, text=True, timeout=10,
         )
         if result.returncode == 0 and result.stdout.strip():
-            console.print(Panel(result.stdout.strip(), title="🧠 Wake-up Context", border_style="magenta"))
+            console.print(Panel(result.stdout.strip(), title="Wake-up Context", border_style="magenta"))
         else:
             console.print("[dim]No wake-up context available.[/dim]")
     except FileNotFoundError:

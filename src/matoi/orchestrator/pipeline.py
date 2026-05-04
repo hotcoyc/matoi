@@ -75,7 +75,7 @@ class MVPPipeline:
             if memory_context:
                 console.print(Panel(
                     "[dim]Injecting relevant context from MemPalace[/dim]",
-                    title="🧠 Memory",
+                    title="Memory",
                     border_style="magenta",
                 ))
 
@@ -83,14 +83,14 @@ class MVPPipeline:
         console.print()
         console.print(Panel(
             f"[bold]{task_description}[/bold]",
-            title="纏 Task",
+            title="Task",
             border_style="white",
         ))
         console.print()
 
         brief = self._stage_brief(pm, task_description, memory_context)
         (session_dir / "brief.md").write_text(f"# Brief by {pm.name}\n\n{brief}")
-        console.print(Panel(brief, title=f"[bold]📋 Brief by {pm.name}[/bold]", border_style="cyan"))
+        console.print(Panel(brief, title=f"[bold]Brief by {pm.name}[/bold]", border_style="cyan"))
 
         # ── Stage 2: Expert Pass ──
         opinions: dict[str, str] = {}
@@ -115,7 +115,7 @@ class MVPPipeline:
         (session_dir / "decision.md").write_text(f"# Decision by {pm.name}\n\n{decision}")
         console.print(Panel(
             decision,
-            title=f"[bold]🎯 Decision by {pm.name}[/bold]",
+            title=f"[bold]Decision by {pm.name}[/bold]",
             border_style="green",
         ))
 
@@ -129,7 +129,7 @@ class MVPPipeline:
         )
         (session_dir / "cost.json").write_text(json.dumps(cost_summary, indent=2))
         console.print()
-        console.print(Panel(cost_text, title="💰 Cost", border_style="dim"))
+        console.print(Panel(cost_text, title="Cost", border_style="dim"))
 
         # ── Index artifacts into MemPalace ──
         if self.memory:
@@ -137,7 +137,7 @@ class MVPPipeline:
             if count > 0:
                 console.print(Panel(
                     f"Indexed {count} drawers into MemPalace",
-                    title="🧠 Memory Updated",
+                    title="Memory Updated",
                     border_style="magenta",
                 ))
 
@@ -252,9 +252,9 @@ class MVPPipeline:
 
 def _type_icon(agent: AgentDefinition) -> str:
     icons = {
-        "coordinator": "👔",
-        "executor": "⚙️",
-        "thinker": "🧠",
-        "critic": "🔍",
+        "coordinator": "[PM]",
+        "executor": "[EXE]",
+        "thinker": "[THK]",
+        "critic": "[CRT]",
     }
     return icons.get(agent.agent_type.value, "")

@@ -25,7 +25,7 @@ class ProjectScan(BaseModel):
 
     def summary(self) -> str:
         """Human-readable project summary."""
-        lines = [f"📁 **{self.name}** ({self.path})"]
+        lines = [f"[{self.name}] ({self.path})"]
         lines.append(f"   Files: {self.total_files} | Dirs: {self.total_dirs}")
 
         if self.languages:

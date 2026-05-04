@@ -69,7 +69,7 @@ def open_city() -> None:
         f"  Drag and drop this file into the viewer:\n"
         f"  [cyan]{cc_file.resolve()}[/cyan]\n\n"
         f"  Or use the 'Load map' button.",
-        title="🏙️  3D Code City",
+        title="3D Code City",
         border_style="cyan",
     ))
 

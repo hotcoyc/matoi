@@ -88,7 +88,7 @@ def _onboarding() -> None:
     console.print("[bold]Step 2:[/bold] Scanning your project...\n")
     cwd = Path.cwd()
     scan = scan_project(cwd)
-    console.print(Panel(scan.summary(), title="📁 Project Scan", border_style="cyan"))
+    console.print(Panel(scan.summary(), title="Project Scan", border_style="cyan"))
 
     if scan.file_tree:
         console.print(Panel(scan.file_tree, title="[dim]Structure[/dim]", border_style="dim"))
@@ -140,7 +140,7 @@ def _onboarding() -> None:
     table.add_column("Category", width=16)
     table.add_column("Motto", style="italic dim")
 
-    TYPE_ICONS = {"coordinator": "👔", "executor": "⚙️", "thinker": "🧠", "critic": "🔍"}
+    TYPE_ICONS = {"coordinator": "[PM]", "executor": "[EXE]", "thinker": "[THK]", "critic": "[CRT]"}
 
     for i, agent in enumerate(all_agents, 1):
         icon = TYPE_ICONS.get(agent.agent_type.value, "")
