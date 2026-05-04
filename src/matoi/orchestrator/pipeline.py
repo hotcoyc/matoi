@@ -74,8 +74,7 @@ class MVPPipeline:
             memory_context = self.memory.get_context(task_description)
             if memory_context:
                 console.print(Panel(
-                    f"[dim]{len(self.memory.graph.nodes)} nodes in knowledge graph, "
-                    f"injecting relevant context[/dim]",
+                    "[dim]Injecting relevant context from MemPalace[/dim]",
                     title="🧠 Memory",
                     border_style="magenta",
                 ))
@@ -132,26 +131,23 @@ class MVPPipeline:
         console.print()
         console.print(Panel(cost_text, title="💰 Cost", border_style="dim"))
 
-        # ── Memory extraction ──
+        # ── Index artifacts into MemPalace ──
         if self.memory:
-            artifacts = {"brief": brief, "decision": decision}
-            for slug, opinion in opinions.items():
-                agent = self.registry.get(slug)
-                name = agent.name if agent else slug
-                artifacts[f"opinion by {name}"] = opinion
-
-            new_nodes = self.memory.extract_and_store(
-                session_id=session_id,
-                artifacts=artifacts,
-                provider=self.provider,
-            )
-            if new_nodes:
-                node_labels = ", ".join(n.label for n in new_nodes[:5])
+            count = self.memory.store_artifacts(session_id, session_dir)
+            if count > 0:
                 console.print(Panel(
-                    f"Extracted {len(new_nodes)} nodes: {node_labels}",
+                    f"Indexed {count} drawers into MemPalace",
                     title="🧠 Memory Updated",
                     border_style="magenta",
                 ))
+
+            # Add key decision to knowledge graph
+            self.memory.add_to_knowledge_graph(
+                subject=f"session:{session_id}",
+                predicate="decided",
+                obj=decision[:200],
+                source_file=str(session_dir / "decision.md"),
+            )
 
         console.print(f"\n[dim]Artifacts saved to: {session_dir}[/dim]\n")
 

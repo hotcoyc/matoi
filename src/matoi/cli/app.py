@@ -199,16 +199,18 @@ def _status(project_config: "ProjectConfig") -> None:
         a = registry.get(slug)
         agent_names.append(a.name if a else slug)
 
-    # Check memory
+    # Check memory (MemPalace)
     project_dir = get_project_dir()
-    graph_path = project_dir / "memory" / "graph.json"
     memory_info = ""
-    if graph_path.exists():
-        import json
-        data = json.loads(graph_path.read_text())
-        node_count = len(data.get("nodes", {}))
-        if node_count:
-            memory_info = f"\n  [bold]Memory:[/bold] {node_count} nodes in knowledge graph"
+    try:
+        from matoi.storage.memory import MemoryStore
+        mem = MemoryStore(project_dir)
+        status = mem.status()
+        drawer_count = status.get("drawers", 0) if isinstance(status, dict) else 0
+        if drawer_count:
+            memory_info = f"\n  [bold]Memory:[/bold] {drawer_count} drawers in MemPalace"
+    except Exception:
+        pass
 
     # Count artifacts
     artifacts_dir = project_dir / "artifacts"

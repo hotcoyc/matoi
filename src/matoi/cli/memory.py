@@ -1,117 +1,97 @@
-"""CLI commands for knowledge graph memory."""
+"""CLI commands for memory (backed by MemPalace)."""
+
+import subprocess
 
 import typer
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-from rich.tree import Tree
-
-from matoi.core.config import get_project_dir
-from matoi.storage.memory import MemoryStore
 
 console = Console()
 memory_app = typer.Typer(no_args_is_help=True)
 
-NODE_ICONS = {
-    "decision": "🎯",
-    "topic": "📌",
-    "insight": "💡",
-    "risk": "⚠️",
-    "rejected": "❌",
-}
-
-NODE_COLORS = {
-    "decision": "green",
-    "topic": "cyan",
-    "insight": "yellow",
-    "risk": "red",
-    "rejected": "dim",
-}
-
 
 @memory_app.command("show")
-def show_graph() -> None:
-    """Show the knowledge graph overview."""
-    memory = MemoryStore(get_project_dir())
-    graph = memory.graph
-
-    if not graph.nodes:
-        console.print("[dim]Knowledge graph is empty. Run 'matoi task run' to populate it.[/dim]")
-        raise typer.Exit()
-
-    # Stats
-    type_counts = {}
-    for node in graph.nodes.values():
-        type_counts[node.type.value] = type_counts.get(node.type.value, 0) + 1
-
-    sessions = set(n.session_id for n in graph.nodes.values())
-
-    stats = (
-        f"  Nodes: {len(graph.nodes)}  |  "
-        f"Edges: {len(graph.edges)}  |  "
-        f"Sessions: {len(sessions)}"
-    )
-    console.print()
-    console.print(Panel(stats, title="🧠 Knowledge Graph", border_style="magenta"))
-
-    # Type breakdown
-    for ntype, count in sorted(type_counts.items()):
-        icon = NODE_ICONS.get(ntype, "•")
-        console.print(f"  {icon} {ntype}: {count}")
-
-    # All nodes as table
-    console.print()
-    table = Table(title="Nodes", border_style="dim", show_lines=True)
-    table.add_column("Type", width=10)
-    table.add_column("Label", min_width=25)
-    table.add_column("Tags", style="dim", width=25)
-    table.add_column("Session", style="dim", width=18)
-
-    for node in sorted(graph.nodes.values(), key=lambda n: n.created_at, reverse=True):
-        icon = NODE_ICONS.get(node.type.value, "•")
-        color = NODE_COLORS.get(node.type.value, "white")
-        table.add_row(
-            f"{icon} {node.type.value}",
-            f"[{color}]{node.label}[/{color}]",
-            ", ".join(node.tags[:3]),
-            node.session_id[:15],
+def show_memory() -> None:
+    """Show memory status (powered by MemPalace)."""
+    try:
+        result = subprocess.run(
+            ["mempalace", "status"],
+            capture_output=True, text=True, timeout=10,
         )
-
-    console.print(table)
-    console.print()
+        if result.returncode == 0:
+            console.print(result.stdout)
+        else:
+            console.print("[dim]MemPalace not initialized. Run 'mempalace init .' first.[/dim]")
+    except FileNotFoundError:
+        console.print("[red]mempalace not installed. Run 'pip install mempalace'.[/red]")
 
 
 @memory_app.command("search")
-def search_graph(query: str = typer.Argument(help="Search query.")) -> None:
-    """Search the knowledge graph."""
-    memory = MemoryStore(get_project_dir())
-    results = memory.graph.search(query)
+def search_memory(query: str = typer.Argument(help="Search query.")) -> None:
+    """Semantic search across memory."""
+    try:
+        result = subprocess.run(
+            ["mempalace", "search", query, "--wing", "matoi"],
+            capture_output=True, text=True, timeout=30,
+        )
+        if result.returncode == 0:
+            console.print(result.stdout)
+        else:
+            console.print(f"[dim]No results for '{query}'.[/dim]")
+    except FileNotFoundError:
+        console.print("[red]mempalace not installed.[/red]")
 
-    if not results:
-        console.print(f"[dim]No results for '{query}'.[/dim]")
-        raise typer.Exit()
 
-    console.print(f"\n[bold]Found {len(results)} results for '{query}':[/bold]\n")
-    for node in results:
-        icon = NODE_ICONS.get(node.type.value, "•")
-        color = NODE_COLORS.get(node.type.value, "white")
-        console.print(f"  {icon} [{color}]{node.label}[/{color}]")
-        console.print(f"     {node.content[:150]}")
-        if node.tags:
-            console.print(f"     [dim]Tags: {', '.join(node.tags)}[/dim]")
-        console.print()
+@memory_app.command("mine")
+def mine_project(
+    path: str = typer.Argument(".", help="Directory to index."),
+    wing: str = typer.Option("matoi", "--wing", "-w", help="Wing name."),
+) -> None:
+    """Index files into memory."""
+    try:
+        result = subprocess.run(
+            ["mempalace", "mine", path, "--wing", wing],
+            capture_output=False, timeout=120,
+        )
+    except FileNotFoundError:
+        console.print("[red]mempalace not installed.[/red]")
+
+
+@memory_app.command("wake-up")
+def wake_up(
+    wing: str = typer.Option("matoi", "--wing", "-w", help="Wing name."),
+) -> None:
+    """Show wake-up context (Layer 0 + Layer 1)."""
+    try:
+        result = subprocess.run(
+            ["mempalace", "wake-up", "--wing", wing],
+            capture_output=True, text=True, timeout=10,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            console.print(Panel(result.stdout.strip(), title="🧠 Wake-up Context", border_style="magenta"))
+        else:
+            console.print("[dim]No wake-up context available.[/dim]")
+    except FileNotFoundError:
+        console.print("[red]mempalace not installed.[/red]")
 
 
 @memory_app.command("clear")
-def clear_graph(
+def clear_memory(
     force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation."),
 ) -> None:
-    """Clear the knowledge graph."""
+    """Clear all memory (removes MemPalace data)."""
     if not force:
         confirm = typer.confirm("This will delete all memory. Continue?")
         if not confirm:
             raise typer.Exit()
 
-    memory = MemoryStore(get_project_dir())
-    memory.graph_path.unlink(missing_ok=True)
-    console.print("[dim]Knowledge graph cleared.[/dim]")
+    import shutil
+    from pathlib import Path
+
+    palace_dir = Path.home() / ".mempalace"
+    if palace_dir.exists():
+        shutil.rmtree(palace_dir)
+        console.print("[dim]MemPalace data cleared.[/dim]")
+    else:
+        console.print("[dim]No MemPalace data found.[/dim]")
