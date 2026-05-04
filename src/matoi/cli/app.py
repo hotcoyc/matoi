@@ -186,49 +186,77 @@ def _onboarding() -> None:
 
 
 def _build_code_graph(cwd: Path) -> None:
-    """Build code-review-graph and generate visualization."""
+    """Build code-review-graph + CodeCharta visualizations."""
     import shutil
     import subprocess
 
-    if not shutil.which("code-review-graph"):
-        console.print("[dim]  code-review-graph not found, skipping graph build.[/dim]\n")
-        return
-
     console.print()
-    console.print("[bold]Building code graph...[/bold]")
+    console.print("[bold]Building project visualizations...[/bold]")
 
-    try:
-        result = subprocess.run(
-            ["code-review-graph", "build"],
-            cwd=cwd,
-            capture_output=True, text=True, timeout=60,
-        )
-        if result.returncode == 0:
-            # Extract stats from output
-            for line in result.stderr.splitlines() + result.stdout.splitlines():
-                if "nodes" in line and "edges" in line:
-                    console.print(f"  [green]✓ {line.strip()}[/green]")
-                    break
-            else:
-                console.print("  [green]✓ Code graph built[/green]")
+    built_anything = False
 
-            # Generate visualization
-            viz_result = subprocess.run(
-                ["code-review-graph", "visualize"],
+    # ── code-review-graph (AI navigation) ──
+    if shutil.which("code-review-graph"):
+        try:
+            result = subprocess.run(
+                ["code-review-graph", "build"],
                 cwd=cwd,
-                capture_output=True, text=True, timeout=30,
+                capture_output=True, text=True, timeout=60,
             )
-            if viz_result.returncode == 0:
+            if result.returncode == 0:
+                for line in result.stderr.splitlines() + result.stdout.splitlines():
+                    if "nodes" in line and "edges" in line:
+                        console.print(f"  [green]✓ Code graph: {line.strip()}[/green]")
+                        break
+                else:
+                    console.print("  [green]✓ Code graph built[/green]")
+
+                # HTML visualization
+                subprocess.run(
+                    ["code-review-graph", "visualize"],
+                    cwd=cwd,
+                    capture_output=True, text=True, timeout=30,
+                )
                 graph_html = cwd / ".code-review-graph" / "graph.html"
                 if graph_html.exists():
-                    console.print(f"  [green]✓ 3D graph: {graph_html}[/green]")
-                    console.print("  [dim]Open in browser to explore your codebase visually[/dim]")
-        else:
-            console.print(f"  [yellow]Graph build failed: {result.stderr[:100]}[/yellow]")
-    except FileNotFoundError:
-        console.print("[dim]  code-review-graph not available.[/dim]")
-    except subprocess.TimeoutExpired:
-        console.print("[yellow]  Graph build timed out.[/yellow]")
+                    console.print(f"  [dim]  → Dependency graph: {graph_html}[/dim]")
+
+                built_anything = True
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+    else:
+        console.print("  [dim]code-review-graph not found (pip install code-review-graph)[/dim]")
+
+    # ── CodeCharta (3D city) ──
+    if shutil.which("ccsh"):
+        try:
+            output_name = cwd.name or "project"
+            cc_file = cwd / f"{output_name}.cc.json.gz"
+
+            result = subprocess.run(
+                ["ccsh", "unifiedparser", f"-o={output_name}", "src/"]
+                if (cwd / "src").is_dir()
+                else ["ccsh", "unifiedparser", f"-o={output_name}", "."],
+                cwd=cwd,
+                capture_output=True, text=True, timeout=120,
+                env={**__import__("os").environ, "PATH": f"/opt/homebrew/opt/openjdk@17/bin:{__import__('os').environ.get('PATH', '')}"},
+            )
+            if result.returncode == 0 and cc_file.exists():
+                console.print(f"  [green]✓ 3D city: {cc_file}[/green]")
+                console.print("  [dim]  → Open at https://codecharta.com/visualization/app/[/dim]")
+                built_anything = True
+            elif result.returncode != 0:
+                # Try without src/ prefix
+                pass
+        except (FileNotFoundError, subprocess.TimeoutExpired):
+            pass
+    else:
+        console.print("  [dim]CodeCharta not found (npm i -g codecharta-analysis)[/dim]")
+
+    if not built_anything:
+        console.print("  [dim]No visualization tools available. Install with:[/dim]")
+        console.print("  [dim]  pip install code-review-graph[/dim]")
+        console.print("  [dim]  npm i -g codecharta-analysis[/dim]")
 
     console.print()
 
