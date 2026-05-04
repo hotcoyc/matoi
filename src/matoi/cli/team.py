@@ -229,34 +229,25 @@ def recommend(task: str = typer.Argument(help="Task description for recommendati
 
 
 def _render_pm_gallery(coordinators: list[AgentDefinition]) -> None:
-    """Render PM agents as a gallery with avatars."""
-    panels: list[Panel] = []
+    """Render PM agents as a compact gallery."""
+    table = Table(border_style="dim", show_lines=True, expand=True)
+    table.add_column("#", style="bold", width=3, justify="center")
+    table.add_column("PM", min_width=20)
+    table.add_column("Motto", style="italic", min_width=25)
+    table.add_column("Style", width=14)
+    table.add_column("Risk", width=7, justify="center")
 
     for i, pm in enumerate(coordinators):
         color = PM_COLORS.get(pm.slug, "white")
-        avatar = load_avatar(pm.slug, width_chars=18) or ""
-
-        content_lines = [
-            avatar.strip(),
-            "",
-            f"[bold]{pm.name}[/bold]",
-            f'[italic]"{pm.motto}"[/italic]' if pm.motto else "",
-            "",
-            f"  Risk:   {_risk_bar(pm.risk_tolerance)}",
-            f"  Debate: {pm.debate_style}",
-        ]
-
-        panels.append(
-            Panel(
-                "\n".join(content_lines),
-                title=f"[{color}][{i + 1}][/{color}]",
-                border_style=color,
-                width=28,
-                padding=(0, 1),
-            )
+        table.add_row(
+            f"[{color}]{i + 1}[/{color}]",
+            f"[{color}]{pm.name}[/{color}]",
+            pm.motto or "",
+            pm.debate_style,
+            _risk_bar(pm.risk_tolerance),
         )
 
-    console.print(Columns(panels, equal=True, expand=True))
+    console.print(table)
 
 
 def _render_agent_picker(agents: list[AgentDefinition]) -> None:

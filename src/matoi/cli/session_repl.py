@@ -113,13 +113,21 @@ class Session:
             agent_slugs=agent_slugs,
         )
 
-        # ── Describe goal -> PM recommends team ──
+        # ── Describe goal -> assemble team ──
         console.print()
         goal = self.prompt.ask_initial("What are you working on today?")
         console.print()
 
         if goal.strip():
-            self._recommend_team(goal)
+            choice = Prompt.ask(
+                "  Assemble team",
+                choices=["auto", "manual"],
+                default="auto",
+            )
+            if choice == "manual":
+                self._manual_team_selection()
+            else:
+                self._recommend_team(goal)
 
         if self.prompt:
             self.prompt.update_status(
@@ -188,6 +196,44 @@ class Session:
         )
         self.pm = coordinators[int(choice) - 1]
         console.print(f"\n  PM: [bold]{self.pm.name}[/bold]")
+
+    def _manual_team_selection(self) -> None:
+        """Let user pick agents manually."""
+        all_agents = [a for a in self.registry.list_all() if a.agent_type.value != "coordinator"]
+
+        table = Table(border_style="dim", show_lines=False)
+        table.add_column("#", style="bold", width=3, justify="right")
+        table.add_column("Agent", min_width=20)
+        table.add_column("Type", width=8)
+        table.add_column("Category", width=16)
+
+        for i, a in enumerate(all_agents, 1):
+            table.add_row(str(i), a.name, a.agent_type.value, a.category.value)
+
+        console.print(table)
+        console.print("  [dim]Enter numbers separated by commas (e.g. 1,3,5), max 4:[/dim]")
+        raw = Prompt.ask("  Agents")
+
+        self.agents = []
+        for part in raw.split(","):
+            part = part.strip()
+            if part.isdigit():
+                idx = int(part) - 1
+                if 0 <= idx < len(all_agents) and len(self.agents) < 4:
+                    self.agents.append(all_agents[idx])
+
+        if self.agents:
+            names = ", ".join(f"[bold]{a.name}[/bold]" for a in self.agents)
+            console.print(f"\n  Team: {names}")
+
+            pc = load_project_config() or ProjectConfig()
+            pc.pm = self.pm.slug if self.pm else ""
+            pc.agents = [a.slug for a in self.agents]
+            pc.project_name = pc.project_name or Path.cwd().name
+            save_project_config(pc)
+        else:
+            console.print("  [dim]No agents selected, using defaults.[/dim]")
+            self.agents = [a for a in all_agents[:3]]
 
     def _recommend_team(self, goal: str) -> None:
         """PM recommends team composition based on the goal."""
@@ -376,7 +422,10 @@ class Session:
         system = (
             f"You are {agent.name}, a {agent.role}.\n"
             f"Motto: \"{agent.motto}\"\n\n"
-            f"{agent.system_prompt}"
+            f"{agent.system_prompt}\n\n"
+            "IMPORTANT: Be concise. No filler, no self-introductions, no preamble. "
+            "Go straight to the point. Max 300 words per response. "
+            "Do not explain who you are or what you can do -- just do the work."
         )
 
         full_text = ""
