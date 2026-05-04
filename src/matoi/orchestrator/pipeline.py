@@ -107,9 +107,52 @@ class MVPPipeline:
                 f"# {agent.name}\n\n{opinion}"
             )
 
-        # ── Stage 3: Synthesis ──
-        console.rule("[bold green]Stage 3: Synthesis[/bold green]")
-        decision = self._stage_synthesis(pm, task_description, brief, opinions)
+        # ── Stage 3: Conflict Detection ──
+        debate_context = ""
+        if len(opinions) >= 2 and not self.cost_tracker.is_over_budget():
+            console.rule("[dim]Stage 3: Conflict Detection[/dim]")
+            from matoi.orchestrator.conflict import ConflictDetector
+            from matoi.orchestrator.debate import DebateEngine
+
+            detector = ConflictDetector(self.provider)
+            conflicts = detector.detect(opinions)
+
+            if conflicts:
+                console.print(f"  [bold]{len(conflicts)} conflict(s) detected:[/bold]")
+                for c in conflicts:
+                    console.print(f"    [{c.severity:.1f}] {c.topic} ({', '.join(c.agents)})")
+                console.print()
+
+                # ── Stage 4: Debate ──
+                console.rule("[dim]Stage 4: Debate[/dim]")
+                engine = DebateEngine(
+                    provider=self.provider,
+                    router=self.router,
+                    registry=self.registry,
+                    max_rounds=self.cost_tracker.budget.max_debate_rounds,
+                )
+
+                all_transcripts = []
+                for conflict in conflicts:
+                    if self.cost_tracker.is_over_budget():
+                        console.print("[yellow]Budget limit reached, skipping remaining debates.[/yellow]")
+                        break
+                    rounds = engine.run_debate(conflict)
+                    transcript = engine.format_transcript(conflict, rounds)
+                    all_transcripts.append(transcript)
+
+                if all_transcripts:
+                    debate_text = "\n\n---\n\n".join(all_transcripts)
+                    (session_dir / "debate.md").write_text(f"# Debate Transcript\n\n{debate_text}")
+                    debate_context = f"\n\n## Debate Results\n{debate_text}"
+                    console.print()
+            else:
+                console.print("  [dim]No significant conflicts found. Skipping debate.[/dim]")
+                console.print()
+
+        # ── Stage 5: Synthesis ──
+        console.rule("[bold green]Stage 5: Synthesis[/bold green]")
+        decision = self._stage_synthesis(pm, task_description, brief, opinions, debate_context)
         (session_dir / "decision.md").write_text(f"# Decision by {pm.name}\n\n{decision}")
 
         # ── Cost summary ──
@@ -202,8 +245,9 @@ class MVPPipeline:
         task: str,
         brief: str,
         opinions: dict[str, str],
+        debate_context: str = "",
     ) -> str:
-        """PM synthesizes final decision from all opinions."""
+        """PM synthesizes final decision from all opinions and debate results."""
         model_id = self.router.resolve_model(pm, "synthesis")
 
         opinions_text = ""
@@ -212,22 +256,32 @@ class MVPPipeline:
             name = agent.name if agent else slug
             opinions_text += f"\n### {name}\n{opinion}\n"
 
+        debate_instruction = ""
+        if debate_context:
+            debate_instruction = (
+                "\nIMPORTANT: The team debated specific conflicts. "
+                "Address each debated topic explicitly in your decision. "
+                "Explain which side you chose and why.\n"
+            )
+
         system = (
             f"You are {pm.name}, a {pm.role}.\n"
             f"Motto: \"{pm.motto}\"\n\n"
             f"{pm.system_prompt}\n\n"
             "Synthesize a final decision from the team's opinions. Include:\n"
-            "1. **Decision** — what we're going to do\n"
-            "2. **Rationale** — why this approach, considering all opinions\n"
-            "3. **Rejected alternatives** — what we considered but didn't choose\n"
-            "4. **Risks** — what could go wrong\n"
-            "5. **Next steps** — concrete action items\n\n"
+            "1. **Decision** -- what we're going to do\n"
+            "2. **Rationale** -- why this approach, considering all opinions\n"
+            "3. **Rejected alternatives** -- what we considered but didn't choose\n"
+            "4. **Risks** -- what could go wrong\n"
+            "5. **Next steps** -- concrete action items\n"
+            f"{debate_instruction}\n"
             "Be decisive. Pick a direction, don't hedge."
         )
         user_msg = (
             f"## Original Task\n{task}\n\n"
             f"## Brief\n{brief}\n\n"
             f"## Team Opinions\n{opinions_text}"
+            f"{debate_context}"
         )
 
         text, cost = _stream_call(
