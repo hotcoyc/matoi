@@ -470,3 +470,120 @@ def cost() -> None:
         console.print(mtable)
 
     console.print()
+
+
+@app.command()
+def history(
+    session_id: str = typer.Argument(None, help="Session ID to view details. Omit for list."),
+) -> None:
+    """Browse past sessions and their artifacts."""
+    import json
+
+    from matoi.core.config import get_project_dir, load_project_config
+    from rich.table import Table
+    from rich.markdown import Markdown
+
+    project_config = load_project_config()
+    if project_config is None:
+        console.print("[red]Project not initialized. Run 'matoi' first.[/red]")
+        raise typer.Exit(1)
+
+    artifacts_dir = get_project_dir() / "artifacts"
+    if not artifacts_dir.exists():
+        console.print("[dim]No sessions yet.[/dim]")
+        raise typer.Exit()
+
+    sessions = sorted(artifacts_dir.iterdir(), reverse=True)
+    if not sessions:
+        console.print("[dim]No sessions yet.[/dim]")
+        raise typer.Exit()
+
+    # ── List mode ──
+    if session_id is None:
+        table = Table(title="Sessions", border_style="dim", show_lines=False)
+        table.add_column("#", style="dim", width=3, justify="right")
+        table.add_column("Session", style="bold", min_width=24)
+        table.add_column("Artifacts", width=10, justify="right")
+        table.add_column("Cost", justify="right", style="yellow", width=10)
+
+        for i, sd in enumerate(sessions, 1):
+            if not sd.is_dir():
+                continue
+            files = list(sd.iterdir())
+            file_count = len(files)
+
+            cost_str = ""
+            cost_file = sd / "cost.json"
+            if cost_file.exists():
+                try:
+                    data = json.loads(cost_file.read_text())
+                    cost_str = f"${data.get('total_cost_usd', 0):.4f}"
+                except Exception:
+                    pass
+
+            table.add_row(str(i), sd.name, str(file_count), cost_str)
+
+        console.print()
+        console.print(table)
+        console.print(f"\n  [dim]View details: matoi history <session_id>[/dim]\n")
+        return
+
+    # ── Detail mode ──
+    # Find session by exact ID or prefix
+    target = None
+    for sd in sessions:
+        if sd.name == session_id or sd.name.startswith(session_id):
+            target = sd
+            break
+
+    if target is None:
+        console.print(f"[red]Session '{session_id}' not found.[/red]")
+        raise typer.Exit(1)
+
+    console.print(f"\n  [bold]Session: {target.name}[/bold]\n")
+
+    # List artifacts
+    files = sorted(target.iterdir())
+    for f in files:
+        size = f"({f.stat().st_size / 1024:.1f} KB)"
+        console.print(f"  {f.name} [dim]{size}[/dim]")
+
+    console.print()
+
+    # Show key artifacts
+    for name in ["brief.md", "decision.md", "debate.md"]:
+        artifact = target / name
+        if artifact.exists():
+            content = artifact.read_text()
+            console.rule(f"[bold]{name}[/bold]")
+            try:
+                console.print(Markdown(content))
+            except Exception:
+                console.print(content)
+            console.print()
+
+    # Show cost
+    cost_file = target / "cost.json"
+    if cost_file.exists():
+        try:
+            data = json.loads(cost_file.read_text())
+            console.rule("[bold]Cost[/bold]")
+            breakdown = data.get("breakdown", [])
+            if breakdown:
+                ctable = Table(border_style="dim", show_lines=False)
+                ctable.add_column("Agent", min_width=18)
+                ctable.add_column("Stage", width=14)
+                ctable.add_column("Tokens", justify="right", width=10)
+                ctable.add_column("Cost", justify="right", style="yellow", width=10)
+                for row in breakdown:
+                    tokens = row.get("input_tokens", 0) + row.get("output_tokens", 0)
+                    ctable.add_row(
+                        row.get("agent", ""),
+                        row.get("stage", ""),
+                        f"{tokens:,}",
+                        f"${row.get('cost_usd', 0):.4f}",
+                    )
+                console.print(ctable)
+            console.print(f"\n  [bold]Total: ${data.get('total_cost_usd', 0):.4f}[/bold]\n")
+        except Exception:
+            pass
