@@ -30,7 +30,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "mempalace hook run --hook stop --harness claude-code",
+            "command": "/Users/ak/IdeaProjects/ai-agency-platform/.venv/bin/mempalace hook run --hook stop --harness claude-code",
             "timeout": 30
           }
         ]
@@ -42,7 +42,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "mempalace hook run --hook precompact --harness claude-code",
+            "command": "/Users/ak/IdeaProjects/ai-agency-platform/.venv/bin/mempalace hook run --hook precompact --harness claude-code",
             "timeout": 30
           }
         ]
