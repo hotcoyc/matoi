@@ -312,6 +312,10 @@ class Session:
             if not user_input:
                 continue
 
+            # ── Exit without slash ──
+            if user_input.lower() in ("exit", "quit", "q"):
+                break
+
             # ── Commands ──
             if user_input.startswith("/"):
                 cmd = user_input.split()[0].lower()
