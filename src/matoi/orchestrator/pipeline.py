@@ -88,9 +88,9 @@ class MVPPipeline:
         ))
         console.print()
 
+        console.rule("[bold cyan]Stage 1: Brief[/bold cyan]")
         brief = self._stage_brief(pm, task_description, memory_context)
         (session_dir / "brief.md").write_text(f"# Brief by {pm.name}\n\n{brief}")
-        console.print(Panel(brief, title=f"[bold]Brief by {pm.name}[/bold]", border_style="cyan"))
 
         # ── Stage 2: Expert Pass ──
         opinions: dict[str, str] = {}
@@ -98,26 +98,19 @@ class MVPPipeline:
             if self.cost_tracker.is_over_budget():
                 console.print("[yellow]Budget limit reached, skipping remaining agents.[/yellow]")
                 break
+
+            console.rule(f"[dim]Stage 2: Expert Pass[/dim]")
             opinion = self._stage_expert_pass(agent, task_description, brief)
             opinions[agent.slug] = opinion
 
             (session_dir / f"opinion_{agent.slug}.md").write_text(
                 f"# {agent.name}\n\n{opinion}"
             )
-            console.print(Panel(
-                opinion,
-                title=f"[bold]{_type_icon(agent)} {agent.name}[/bold]",
-                border_style="dim",
-            ))
 
         # ── Stage 3: Synthesis ──
+        console.rule("[bold green]Stage 3: Synthesis[/bold green]")
         decision = self._stage_synthesis(pm, task_description, brief, opinions)
         (session_dir / "decision.md").write_text(f"# Decision by {pm.name}\n\n{decision}")
-        console.print(Panel(
-            decision,
-            title=f"[bold]Decision by {pm.name}[/bold]",
-            border_style="green",
-        ))
 
         # ── Cost summary ──
         cost_summary = self.cost_tracker.summary()
@@ -166,9 +159,10 @@ class MVPPipeline:
         if memory_context:
             user_msg = f"{task}\n\n{memory_context}"
 
-        with console.status(f"[bold cyan]{pm.name}[/bold cyan] is writing the brief..."):
-            text, cost = self.provider.call(model_id, system, user_msg)
-
+        text, cost = _stream_call(
+            self.provider, model_id, system, user_msg,
+            label=f"{pm.name} -- brief",
+        )
         cost.agent_slug = pm.slug
         cost.stage = "brief"
         self.cost_tracker.record(cost)
@@ -193,9 +187,10 @@ class MVPPipeline:
         )
         user_msg = f"## Task\n{task}\n\n## PM Brief\n{brief}"
 
-        with console.status(f"[bold]{_type_icon(agent)} {agent.name}[/bold] is thinking..."):
-            text, cost = self.provider.call(model_id, system, user_msg)
-
+        text, cost = _stream_call(
+            self.provider, model_id, system, user_msg,
+            label=f"{_type_icon(agent)} {agent.name}",
+        )
         cost.agent_slug = agent.slug
         cost.stage = "expert_pass"
         self.cost_tracker.record(cost)
@@ -235,13 +230,51 @@ class MVPPipeline:
             f"## Team Opinions\n{opinions_text}"
         )
 
-        with console.status(f"[bold green]{pm.name}[/bold green] is synthesizing the decision..."):
-            text, cost = self.provider.call(model_id, system, user_msg)
-
+        text, cost = _stream_call(
+            self.provider, model_id, system, user_msg,
+            label=f"{pm.name} -- synthesis",
+        )
         cost.agent_slug = pm.slug
         cost.stage = "synthesis"
         self.cost_tracker.record(cost)
         return text
+
+
+def _stream_call(
+    provider: AnthropicProvider,
+    model_id: str,
+    system: str,
+    user_msg: str,
+    label: str = "",
+) -> tuple[str, "CostRecord"]:
+    """Stream an LLM call with live output. Returns (full_text, cost)."""
+    from matoi.core.cost import CostRecord
+
+    console.print(f"  [bold]{label}[/bold]")
+    console.print()
+
+    full_text = ""
+    cost = None
+
+    for chunk in provider.stream(model_id, system, user_msg):
+        if isinstance(chunk, CostRecord):
+            cost = chunk
+        else:
+            console.print(chunk, end="", highlight=False)
+            full_text += chunk
+
+    console.print()  # newline after stream
+    console.print()
+
+    if cost is None:
+        # Fallback — shouldn't happen
+        cost = CostRecord(
+            agent_slug="", stage="",
+            model_tier=provider._infer_tier(model_id),
+            model_id=model_id,
+        )
+
+    return full_text, cost
 
 
 def _type_icon(agent: AgentDefinition) -> str:
