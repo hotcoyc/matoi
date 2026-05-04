@@ -27,17 +27,16 @@ matoi run "Validate market for AI-powered pet care" --team my-startup
 ```
 
 **7-этапный pipeline:**
-1. **Intake** — получение задачи от пользователя
-2. **PM Brief** — PM формулирует цель, ограничения, deliverables
-3. **Expert Pass** — каждый агент независимо даёт экспертное мнение
-4. **Conflict Detection** — система выявляет реальные расхождения
-5. **Debate** — структурированный спор (claim → critique → alternative → tradeoff)
-6. **Synthesis** — PM синтезирует итоговое решение
-7. **Artifacts** — результаты сохраняются в файлы
+1. **PM Brief** — PM формулирует цель, ограничения, deliverables (Haiku)
+2. **Expert Pass** — каждый агент независимо даёт экспертное мнение (Sonnet/Opus, streaming)
+3. **Conflict Detection** — Haiku сканирует мнения, находит расхождения (severity >= 0.5)
+4. **Debate** — если конфликты найдены: structured rounds (claim/critique/concession/recommendation). Если нет — пропускается
+5. **Synthesis** — PM синтезирует решение с учётом дебатов (Opus, streaming)
+6. **Artifacts** — brief.md, opinion_*.md, debate.md, decision.md, cost.json
 
 ## 14 агентов в 6 категориях
 
-### Coordinators (👔) — PM-агенты с разными стилями
+### Coordinators [PM] — PM-агенты с разными стилями
 | Агент | Стиль | Risk Tolerance |
 |-------|-------|---------------|
 | **Startup PM** | Скорость, ship fast, режь scope | Высокий (0.8) |
@@ -45,7 +44,7 @@ matoi run "Validate market for AI-powered pet care" --team my-startup
 | **Enterprise PM** | Документация, compliance, аудит | Минимальный (0.1) |
 | **Product Strategist PM** | Ценность для пользователя, research first | Средний (0.5) |
 
-### Executors (⚙️) — реализация
+### Executors [EXE] — реализация
 | Агент | Iron Law |
 |-------|---------|
 | **Backend Engineer** | No production code without a failing test first |
@@ -53,7 +52,7 @@ matoi run "Validate market for AI-powered pet care" --team my-startup
 | **Product Designer** | Design it before you build it |
 | **Growth Marketer** | Every channel is a hypothesis until the data says otherwise |
 
-### Thinkers (🧠) — исследования и стратегия
+### Thinkers [THK] — исследования и стратегия
 | Агент | Iron Law |
 |-------|---------|
 | **Market Researcher** | Data first, opinions second. No claims without sources |
@@ -61,7 +60,7 @@ matoi run "Validate market for AI-powered pet care" --team my-startup
 | **Business Analyst** | If you can't model it, you don't understand it |
 | **UX Researcher** | Talk to users, not about users |
 
-### Critics (🔍) — проверка и качество
+### Critics [CRT] — проверка и качество
 | Агент | Iron Law |
 |-------|---------|
 | **Security Reviewer** | Trust nothing. Verify everything |
@@ -96,7 +95,10 @@ matoi init                           # Инициализация проекта
 | LLM | Anthropic Python SDK (не Agent SDK) |
 | Агенты | Markdown + YAML frontmatter |
 | Аватары | Pixel-art PNG → Braille Unicode (Pillow) |
-| Хранение | JSON/SQLite |
+| Память | MemPalace (ChromaDB + SQLite, 96.6% recall) |
+| Code graph | code-review-graph (Tree-sitter, 28 MCP tools) |
+| 3D визуализация | CodeCharta (.cc.json.gz) |
+| Streaming | Anthropic SDK stream(), token-by-token вывод |
 | Тесты | pytest |
 | Линтер | ruff |
 
@@ -104,10 +106,11 @@ matoi init                           # Инициализация проекта
 
 | Стадия | Модель | Зачем |
 |--------|--------|-------|
-| Brief | Haiku | Простая структуризация задачи |
-| Expert Pass | Sonnet | Основная экспертная работа |
-| Debate | Sonnet/Opus | Зависит от сложности конфликта |
-| Synthesis | Opus | Критическое итоговое решение |
+| Brief | Haiku ($1/$5) | Простая структуризация задачи |
+| Expert Pass | Sonnet ($3/$15) | Основная экспертная работа |
+| Conflict Detection | Haiku ($1/$5) | Дешёвое сканирование расхождений |
+| Debate | Sonnet ($3/$15) | Structured rounds по конфликтам |
+| Synthesis | Opus ($15/$75) | Критическое итоговое решение |
 
 ## Архитектура (6 слоёв)
 

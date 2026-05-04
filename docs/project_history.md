@@ -266,31 +266,83 @@ matoi                # запуск → онбординг
 
 ---
 
-### Текущее состояние (конец дня 3 мая 2026)
+### Фаза 13: MemPalace, визуализация, cost tracking (4 мая 2026)
 
-**Статус:** работающий MVP. Pipeline реально вызывает API, агенты дают мнения, PM синтезирует решения, память накапливается.
+- **MemPalace** заменил самодельный knowledge graph: 433 drawers, семантический поиск (96.6% recall), MCP с 29 инструментами
+- **code-review-graph**: 210 nodes, 1317 edges, 28 MCP tools для AI-навигации по коду
+- **CodeCharta**: 3D-город кода (.cc.json.gz)
+- **matoi viz**: команды graph/city/build/status
+- **Реальный cost tracking**: Haiku $1/$5, Sonnet $3/$15, Opus $15/$75 per 1M tokens
+- **matoi cost**: агрегация стоимости по всем сессиям с breakdown по моделям
+
+---
+
+### Фаза 14: Streaming и Debate Engine (4 мая 2026)
+
+**Streaming:** текст появляется token-by-token вместо ожидания полного ответа. Используется `client.messages.stream()` из Anthropic SDK.
+
+**Conflict Detection + Debate Engine — полный 5-стадийный pipeline:**
+
+```
+1. PM Brief (Haiku)
+2. Expert Pass (Sonnet/Opus, streaming)
+3. Conflict Detection (Haiku -- сканирует расхождения)
+     |
+     +-- конфликты найдены (severity >= 0.5) --> Debate
+     |
+     +-- нет конфликтов --> пропуск, сразу в Synthesis
+     |
+4. Debate (structured rounds: claim/critique/concession/recommendation)
+5. Synthesis (Opus, streaming -- PM решает с учётом дебатов)
+```
+
+**Debate protocol:**
+- Каждый несогласный агент формулирует claim + critique + concession + recommendation
+- Max rounds настраивается (default: 2)
+- Budget-aware: пропускает debate если бюджет исчерпан
+- Артефакт: debate.md с полным транскриптом
+
+---
+
+### Текущее состояние (4 мая 2026)
+
+**Статус:** полноценный MVP с 5-стадийным pipeline, дебатами, памятью и визуализацией.
 
 **Что работает:**
-- `matoi` — онбординг в любом проекте (API key → scan → team)
-- `matoi run "task"` — 3-стадийный pipeline с Anthropic API
-- `matoi task plan` — dry run с маршрутизацией моделей
-- `matoi roster list/show` — 14 агентов с pixel-art аватарами
-- `matoi team create/show` — интерактивная сборка команды
-- `matoi memory show/search` — knowledge graph
-- Cost-intelligent routing: Haiku/Sonnet/Opus по стадии и агенту
-- Budget enforcement
+- `matoi` -- онбординг в любом проекте (API key, scan, graph, team)
+- `matoi run "task"` -- 5-стадийный pipeline со streaming
+- `matoi cost` -- агрегация стоимости по сессиям и моделям
+- `matoi roster list/show` -- 14 агентов с pixel-art аватарами
+- `matoi team create/show` -- интерактивная сборка команды
+- `matoi memory show/search/mine` -- MemPalace (433 drawers)
+- `matoi viz graph/city/build/status` -- визуализации
+- `matoi task plan` -- dry run с маршрутизацией моделей
+- Conflict detection (автоматический, Haiku)
+- Structured debate (claim/critique/concession/recommendation)
+- Cost-intelligent routing: Haiku/Sonnet/Opus
+- Real cost tracking ($1/$5, $3/$15, $15/$75 per 1M tokens)
+- Streaming вывод (token-by-token)
 - 8 тестов, все проходят
 
 **Что предстоит:**
-- Conflict detection и debate engine (стадии 4-5 pipeline)
 - Больше агентов (Content Strategist, DevOps, Financial Modeler)
-- GitHub repo + PyPI + Homebrew (когда готов к релизу)
-- 3D визуализация проекта (CodeCharta/browser)
-- Streaming вывод (сейчас ждёт полный ответ)
-- Реальный cost tracking (цены за токены)
+- GitHub repo + PyPI + Homebrew
+- MemPalace auto-save hooks
+- Selective agent activation (PM рекомендует кого включить)
 
-**Git-история (9 коммитов):**
+**Git-история (19 коммитов):**
 ```
+a8c47da Implement conflict detection + structured debate engine
+d9319eb Add streaming output to pipeline
+b82d8bc Implement matoi cost
+fd96a71 Add real cost tracking with per-token pricing
+9b7c575 Remove all emoji icons from CLI output
+6c02f5b Add matoi viz commands for project visualization
+c29ecfa Add CodeCharta 3D city generation to onboarding
+c3e3917 Integrate code-review-graph for AI code navigation
+c096e2c Replace custom memory with MemPalace backend
+fe6edee Integrate MemPalace as memory backend
+69a1996 Update project history
 9e01dad Redesign UX: matoi works in any project directory
 a88ec08 Implement knowledge graph memory system
 35aada9 Implement MVP pipeline: matoi run with Anthropic API
