@@ -373,5 +373,104 @@ def run(
 
 @app.command()
 def cost() -> None:
-    """Show cost summary for recent sessions."""
-    console.print("[dim]Cost summary not yet implemented.[/dim]")
+    """Show cost summary across all sessions."""
+    import json
+
+    from matoi.core.config import get_project_dir, load_project_config
+    from rich.table import Table
+
+    project_config = load_project_config()
+    if project_config is None:
+        console.print("[red]Project not initialized. Run 'matoi' first.[/red]")
+        raise typer.Exit(1)
+
+    artifacts_dir = get_project_dir() / "artifacts"
+    if not artifacts_dir.exists():
+        console.print("[dim]No sessions yet.[/dim]")
+        raise typer.Exit()
+
+    # Collect all cost.json files
+    sessions = []
+    for session_dir in sorted(artifacts_dir.iterdir(), reverse=True):
+        cost_file = session_dir / "cost.json"
+        if cost_file.exists():
+            data = json.loads(cost_file.read_text())
+            data["session_id"] = session_dir.name
+            sessions.append(data)
+
+    if not sessions:
+        console.print("[dim]No cost data found.[/dim]")
+        raise typer.Exit()
+
+    # Per-session table
+    console.print()
+    table = Table(title="Cost by Session", border_style="dim", show_lines=False)
+    table.add_column("Session", style="dim", min_width=22)
+    table.add_column("Calls", justify="right", width=6)
+    table.add_column("Tokens", justify="right", width=10)
+    table.add_column("Cost", justify="right", style="yellow", width=10)
+
+    grand_total = 0.0
+    grand_tokens = 0
+    grand_calls = 0
+
+    for s in sessions:
+        cost_usd = s.get("total_cost_usd", 0)
+        tokens = s.get("total_tokens", 0)
+        calls = s.get("total_calls", 0)
+        grand_total += cost_usd
+        grand_tokens += tokens
+        grand_calls += calls
+
+        table.add_row(
+            s["session_id"],
+            str(calls),
+            f"{tokens:,}",
+            f"${cost_usd:.4f}",
+        )
+
+    table.add_section()
+    table.add_row(
+        f"[bold]{len(sessions)} sessions[/bold]",
+        f"[bold]{grand_calls}[/bold]",
+        f"[bold]{grand_tokens:,}[/bold]",
+        f"[bold]${grand_total:.4f}[/bold]",
+    )
+
+    console.print(table)
+
+    # Per-model breakdown across all sessions
+    model_costs: dict[str, dict] = {}
+    for s in sessions:
+        for row in s.get("breakdown", []):
+            model = row.get("model", "unknown")
+            if model not in model_costs:
+                model_costs[model] = {"calls": 0, "input": 0, "output": 0, "cost": 0.0}
+            model_costs[model]["calls"] += 1
+            model_costs[model]["input"] += row.get("input_tokens", 0)
+            model_costs[model]["output"] += row.get("output_tokens", 0)
+            model_costs[model]["cost"] += row.get("cost_usd", 0)
+
+    if model_costs:
+        console.print()
+        mtable = Table(title="Cost by Model", border_style="dim", show_lines=False)
+        mtable.add_column("Model", min_width=28)
+        mtable.add_column("Calls", justify="right", width=6)
+        mtable.add_column("In tokens", justify="right", width=10)
+        mtable.add_column("Out tokens", justify="right", width=10)
+        mtable.add_column("Cost", justify="right", style="yellow", width=10)
+
+        for model in sorted(model_costs, key=lambda m: model_costs[m]["cost"], reverse=True):
+            mc = model_costs[model]
+            model_short = model.replace("claude-", "").replace("-20251001", "")
+            mtable.add_row(
+                model_short,
+                str(mc["calls"]),
+                f"{mc['input']:,}",
+                f"{mc['output']:,}",
+                f"${mc['cost']:.4f}",
+            )
+
+        console.print(mtable)
+
+    console.print()
