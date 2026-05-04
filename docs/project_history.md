@@ -350,32 +350,74 @@ Full-featured TUI via prompt_toolkit:
 
 ---
 
-### Current State (May 4, 2026)
+### Phase 19: Distribution -- GitHub + PyPI (May 4, 2026)
 
-**Status:** fully functional MVP. 30 commits, 33 tests, 17 agents.
+- **GitHub repo** published: https://github.com/hotcoyc/matoi (public)
+- **PyPI** published: https://pypi.org/project/matoi/
+- **GitHub Actions** auto-publish: push tag `v*` -> builds and publishes to PyPI via trusted publisher (no tokens)
+- **pipx install matoi** works globally from any directory
+- Fixed: bundled agents/assets in wheel (hatch force-include)
+- Fixed: SSH key setup for new GitHub account
+
+---
+
+### Phase 20: UX Fixes and Polish (May 4, 2026)
+
+- **API key validation** on startup -- test call with Haiku, prompt to re-enter if invalid
+- **PM gallery** replaced broken Braille panels with clean table
+- **Auto/manual team selection** -- user chooses "auto" (PM recommends) or "manual" (pick from list)
+- **Concise prompts** -- "Max 300 words. No self-introductions. Go straight to the point."
+- **exit/quit/q** without slash exits session
+- **/key** command to change API key mid-session
+- **Inline PNG avatars** in Warp/iTerm2/Kitty terminals
+- **New pixel-art avatars** for all 17 agents
+- **All documentation translated to English**
+
+---
+
+### Phase 21: Fullscreen TUI Experiment (May 4, 2026)
+
+Built fullscreen TUI with Textual (sidebar, tabs, color coding, progress indicators). Hit compatibility issues with Textual across Python versions. **Reverted to prompt_toolkit REPL** as default -- more stable and compatible. Fullscreen code kept for future iteration.
+
+---
+
+### Current State (end of May 4, 2026)
+
+**Status:** published MVP. 40+ commits, 33 tests, 17 agents. Available on PyPI and GitHub.
+
+**Install:**
+```bash
+pipx install matoi
+matoi
+```
 
 **What works:**
-- `matoi` -- interactive REPL with TUI (prompt_toolkit, autocomplete, history, status bar)
+- `matoi` -- interactive REPL (prompt_toolkit: autocomplete, history, status bar, inline avatars)
 - `matoi run "task"` -- one-shot pipeline
 - `matoi history` -- view sessions and artifacts
 - `matoi cost` -- cost breakdown by sessions and models
 - `matoi roster list/show` -- 17 agents with pixel-art avatars
 - `matoi team create/show/list` -- teams
-- `matoi memory show/search/mine/wake-up` -- MemPalace (433 drawers)
+- `matoi memory show/search/mine/wake-up` -- MemPalace
 - `matoi viz graph/city/build/status` -- visualizations
 - 6-stage pipeline: activation, brief, expert, conflict, debate, synthesis
 - Streaming + live markdown rendering
-- Selective agent activation (PM recommends who to include)
+- Selective agent activation
 - Pre-commit debate (/commit)
 - Real cost tracking ($1/$5, $3/$15, $15/$75)
 - Error handling with retry and graceful fallback
-- MemPalace auto-save hooks
-- code-review-graph MCP (28 tools, auto-update)
+- Auto-publish: git tag -> GitHub Actions -> PyPI
 - 33 tests, all passing
 
+**Distribution:**
+- GitHub: https://github.com/hotcoyc/matoi
+- PyPI: https://pypi.org/project/matoi/
+- Install: `pipx install matoi`
+
 **What's next:**
-- GitHub repo + PyPI + Homebrew
+- Fullscreen TUI (when Textual stabilizes)
 - Agent marketplace
+- Homebrew tap
 
 ---
 
