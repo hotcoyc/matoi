@@ -18,6 +18,7 @@ dependencies = [
     "python-dotenv>=1.0.0",
     "mempalace>=3.3.0",
     "prompt_toolkit>=3.0.0",
+    "textual>=3.0.0",
 ]
 
 [project.optional-dependencies]

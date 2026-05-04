@@ -31,16 +31,21 @@ app.add_typer(viz_app, name="viz", help="Project visualizations (graph, 3D city)
 
 
 @app.callback(invoke_without_command=True)
-def main(ctx: typer.Context) -> None:
+def main(
+    ctx: typer.Context,
+    classic: bool = typer.Option(False, "--classic", help="Use classic REPL instead of fullscreen TUI."),
+) -> None:
     """Matoi -- your full startup team in the terminal."""
     if ctx.invoked_subcommand is not None:
         return
 
-    # No subcommand → interactive REPL session
-    from matoi.cli.session_repl import Session
-
-    session = Session()
-    session.start()
+    if classic:
+        from matoi.cli.session_repl import Session
+        session = Session()
+        session.start()
+    else:
+        from matoi.cli.fullscreen import run_fullscreen
+        run_fullscreen()
 
 
 def _onboarding() -> None:
