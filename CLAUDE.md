@@ -1,11 +1,11 @@
 # 纏 Matoi
 
-CLI-платформа, где AI-агенты работают как полная стартап-команда.
+A CLI platform where AI agents work as a complete startup team.
 
 ## Project Structure
 
-- `src/matoi/` — основной код платформы
-  - `cli/` — CLI Layer (Typer), команды `matoi roster|team|task|session`
+- `src/matoi/` — main platform code
+  - `cli/` — CLI Layer (Typer), commands `matoi roster|team|task|session`
   - `core/` — Pydantic domain models (agent, team, task, session, cost)
   - `orchestrator/` — 7-stage pipeline, debate engine, conflict detection, synthesis
   - `agents/` — Agent Runtime: registry (.md parser), context builder, activation logic
@@ -13,10 +13,10 @@ CLI-платформа, где AI-агенты работают как полн�
   - `gateway/` — Model Gateway: cost-intelligent routing, Anthropic SDK wrapper
 - `agents/` — Agent registry: .md files with YAML frontmatter (coordinators, executors, thinkers, critics)
 - `teams/` — Team presets (.yaml)
-- `assets/avatars/` — Braille-арт персонажей PM
+- `assets/avatars/` — Braille-art PM character portraits
 - `artifacts/` — Output artifacts (brief.md, decision.md, debate.md, tasks.json, cost.json)
 - `tests/` — pytest
-- `docs/` — проектная документация и ресерч
+- `docs/` — Project documentation and research
 
 ## Conventions
 
@@ -25,15 +25,15 @@ CLI-платформа, где AI-агенты работают как полн�
 - Typer for CLI, Rich for terminal output
 - Anthropic Python SDK (not Agent SDK) — full control over each call
 - Agent definitions: Markdown + YAML frontmatter, one file per agent
-- Язык кода и комментариев: English
-- Язык документации: Russian
+- Code and comment language: English
+- Documentation language: English
 
 ## Key Principles
 
-- Debate ради качества, не ради шоу — спор только при реальных конфликтах
-- Артефакты > разговоры — результат = файлы, не текст чата
-- Cost-aware — Haiku для рутины, Sonnet для работы, Opus для стратегии
-- PM управляет — не хаотичный peer-to-peer, а управляемый pipeline
+- Debate for quality, not for show — arguments only when real conflicts exist
+- Artifacts > conversations — the result = files, not chat text
+- Cost-aware — Haiku for routine, Sonnet for work, Opus for strategy
+- PM is in charge — not chaotic peer-to-peer, but a managed pipeline
 
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph

@@ -1,90 +1,90 @@
-# Используемые проекты
+# Third-Party Projects Used
 
-Сторонние open-source проекты, интегрированные в Matoi.
+Open-source projects integrated into Matoi.
 
 ---
 
-## [MemPalace](https://github.com/mempalace/mempalace) -- память агентов
+## [MemPalace](https://github.com/mempalace/mempalace) -- agent memory
 
-**Что:** Иерархическая система памяти для AI-агентов. ChromaDB + SQLite, семантический поиск (96.6% recall), knowledge graph с темпоральными тройками.
+**What:** A hierarchical memory system for AI agents. ChromaDB + SQLite, semantic search (96.6% recall), knowledge graph with temporal triples.
 
-**Как используем:**
-- Память между сессиями -- артефакты pipeline индексируются автоматически
-- 433 drawers проекта загружены (код, docs, agents)
-- 29 MCP-инструментов для Claude Code
+**How we use it:**
+- Cross-session memory -- pipeline artifacts are indexed automatically
+- 433 project drawers loaded (code, docs, agents)
+- 29 MCP tools for Claude Code
 - Auto-save hooks (Stop, PreCompact)
-- Knowledge graph для связей между решениями
+- Knowledge graph for linking decisions
 - Python API: `MemoryStack`, `search_memories()`, `KnowledgeGraph`
 
-**Лицензия:** MIT | **Stars:** ~51K
+**License:** MIT | **Stars:** ~51K
 
 ---
 
-## [code-review-graph](https://github.com/tirth8205/code-review-graph) -- навигация AI по коду
+## [code-review-graph](https://github.com/tirth8205/code-review-graph) -- AI code navigation
 
-**Что:** Граф знаний кодовой базы через Tree-sitter. Строит карту: файлы, функции, классы, зависимости, вызовы.
+**What:** A codebase knowledge graph via Tree-sitter. Builds a map: files, functions, classes, dependencies, calls.
 
-**Как используем:**
-- 210 nodes, 1317 edges нашего проекта
-- 28 MCP-инструментов для Claude Code (query_graph, detect_changes, get_impact_radius, semantic_search)
-- Auto-update через git pre-commit hook и PostToolUse hook
-- HTML-визуализация: `matoi viz graph`
-- Экономия токенов 6.8-49x vs чтение файлов целиком
+**How we use it:**
+- 210 nodes, 1317 edges for our project
+- 28 MCP tools for Claude Code (query_graph, detect_changes, get_impact_radius, semantic_search)
+- Auto-update via git pre-commit hook and PostToolUse hook
+- HTML visualization: `matoi viz graph`
+- Token savings of 6.8-49x vs reading entire files
 
-**Лицензия:** MIT | **Stars:** ~15K
-
----
-
-## [CodeCharta](https://github.com/MaibornWolff/codecharta) -- 3D визуализация
-
-**Что:** Визуализация кода как 3D-город. Файлы = здания (высота = сложность, площадь = строки кода), папки = районы.
-
-**Как используем:**
-- `matoi viz city` -- генерирует `.cc.json.gz` и открывает viewer
-- `matoi viz build` -- пересборка при онбординге
-- Визуальный обзор архитектуры для новых участников
-
-**Требует:** Java 17+, npm | **Лицензия:** BSD-3 | **Stars:** ~411
+**License:** MIT | **Stars:** ~15K
 
 ---
 
-## [Superpowers](https://github.com/obra/superpowers) -- поведенческие паттерны агентов
+## [CodeCharta](https://github.com/MaibornWolff/codecharta) -- 3D visualization
 
-**Что:** Agentic skills framework с Iron Laws, self-review checklists, escalation rules.
+**What:** Code visualization as a 3D city. Files = buildings (height = complexity, area = lines of code), directories = districts.
 
-**Как используем:**
-- Вдохновение для поведенческих описаний 17 агентов Matoi
-- Протоколы из Superpowers адаптированы:
+**How we use it:**
+- `matoi viz city` -- generates `.cc.json.gz` and opens the viewer
+- `matoi viz build` -- rebuild during onboarding
+- Visual architecture overview for new team members
+
+**Requires:** Java 17+, npm | **License:** BSD-3 | **Stars:** ~411
+
+---
+
+## [Superpowers](https://github.com/obra/superpowers) -- agent behavioral patterns
+
+**What:** An agentic skills framework with Iron Laws, self-review checklists, escalation rules.
+
+**How we use it:**
+- Inspiration for behavioral descriptions of Matoi's 17 agents
+- Protocols from Superpowers adapted:
   - TDD discipline (Backend Engineer)
   - "No fixes without root cause" (Systematic Debugger -> QA)
   - Distrustful verification (Spec Compliance -> QA Strategist)
   - "Design before code" (Brainstormer -> Product Designer)
   - Anti-sycophancy (Code Review Recipient -> all Critics)
 
-**Лицензия:** MIT | **Stars:** ~165K
+**License:** MIT | **Stars:** ~165K
 
 ---
 
 ## [Anthropic Python SDK](https://github.com/anthropics/anthropic-sdk-python) -- LLM gateway
 
-**Что:** Официальный SDK для Claude API.
+**What:** The official SDK for the Claude API.
 
-**Как используем:**
+**How we use it:**
 - `client.messages.create()` -- non-streaming calls (conflict detection, activation)
 - `client.messages.stream()` -- streaming calls (brief, expert pass, synthesis)
-- Cost tracking через `message.usage.input_tokens/output_tokens`
-- Error handling: retry на rate limits (429), connection errors, server errors (5xx), overloaded (529)
+- Cost tracking via `message.usage.input_tokens/output_tokens`
+- Error handling: retry on rate limits (429), connection errors, server errors (5xx), overloaded (529)
 
 ---
 
 ## [prompt_toolkit](https://github.com/prompt-toolkit/python-prompt-toolkit) -- TUI
 
-**Что:** Библиотека для интерактивных CLI с автокомплитом, историей, keybindings.
+**What:** A library for interactive CLIs with autocomplete, history, keybindings.
 
-**Как используем:**
-- Интерактивная REPL-сессия `matoi`
-- Цветной промпт `[project/PM] >` (зелёный/жёлтый)
-- Tab-автокомплит: `/commands` и `@agents` (fuzzy)
+**How we use it:**
+- Interactive REPL session in `matoi`
+- Colored prompt `[project/PM] >` (green/yellow)
+- Tab autocomplete: `/commands` and `@agents` (fuzzy)
 - Persistent history `~/.matoi/history`
 - Bottom status bar: PM, team, tokens, cost
 - Keybindings: Ctrl+C, Ctrl+D, Ctrl+L, Alt+Enter
@@ -93,22 +93,22 @@
 
 ## [Rich](https://github.com/Textualize/rich) -- terminal rendering
 
-**Что:** Библиотека для красивого вывода в терминал.
+**What:** A library for beautiful terminal output.
 
-**Как используем:**
-- Rich Markdown: live rendering ответов агентов (заголовки, списки, код)
-- Rich Live: обновление markdown при streaming
-- Rich Table: таблицы агентов, cost breakdown, team list
-- Rich Panel: карточки агентов, аватары
-- Rich Console: цветной вывод, rule-разделители
+**How we use it:**
+- Rich Markdown: live rendering of agent responses (headings, lists, code)
+- Rich Live: markdown updates during streaming
+- Rich Table: agent tables, cost breakdown, team list
+- Rich Panel: agent cards, avatars
+- Rich Console: colored output, rule dividers
 
 ---
 
-## [Pillow](https://github.com/python-pillow/Pillow) -- pixel-art аватары
+## [Pillow](https://github.com/python-pillow/Pillow) -- pixel-art avatars
 
-**Что:** Библиотека обработки изображений.
+**What:** An image processing library.
 
-**Как используем:**
-- Конвертация pixel-art PNG (128x128) в Braille Unicode для терминала
-- Автоматический ресайз до 30 символов ширины
-- 17 аватаров агентов
+**How we use it:**
+- Converting pixel-art PNGs (128x128) to Braille Unicode for the terminal
+- Automatic resize to 30 characters width
+- 17 agent avatars

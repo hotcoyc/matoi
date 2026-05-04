@@ -1,459 +1,459 @@
-# 纏 Matoi — История создания проекта
+# 纏 Matoi — Project Creation History
 
 ---
 
-## Таймлайн
+## Timeline
 
-### Фаза 0: Зарождение идеи (до апреля 2026)
+### Phase 0: The Birth of the Idea (before April 2026)
 
-**Проблема:** Один AI-агент (ChatGPT, Claude) даёт линейный ответ без альтернатив, не спорит сам с собой, не создаёт полезного напряжения между разными точками зрения. Solo-фаундеру нужна команда, но нанять её невозможно.
+**Problem:** A single AI agent (ChatGPT, Claude) gives a linear answer without alternatives, doesn't argue with itself, doesn't create productive tension between different viewpoints. A solo founder needs a team, but hiring one is not feasible.
 
-**Инсайт:** Что если собрать виртуальную команду из специализированных AI-агентов, которые реально взаимодействуют — спорят, критикуют, предлагают альтернативы и приходят к совместному решению?
+**Insight:** What if you assembled a virtual team of specialized AI agents that genuinely interact — argue, critique, propose alternatives, and arrive at a joint decision?
 
-**Первичный референс:** проект [agency-agents](https://github.com/nacerallahchemssy/agency-agents) — библиотека агентных описаний. Но нужна не библиотека, а операционная система AI-команды.
+**Initial reference:** the [agency-agents](https://github.com/nacerallahchemssy/agency-agents) project — a library of agent descriptions. But what was needed was not a library, but an operating system for an AI team.
 
 ---
 
-### Фаза 1: Первый промпт и техническая спецификация (апрель 2026)
+### Phase 1: First Prompt and Technical Specification (April 2026)
 
-Создан первый документ — `project_promt.md` (502 строки). Детальная техническая спецификация в формате задания для senior staff-level AI architect:
+The first document was created — `project_promt.md` (502 lines). A detailed technical specification in the format of an assignment for a senior staff-level AI architect:
 
-**Ключевые решения на этом этапе:**
-- **CLI-first** — не веб, а терминал. Terminal-first UX для реального рабочего процесса
-- **Python для MVP** — простота, экосистема AI-библиотек
-- **Markdown + YAML frontmatter** для описания агентов — один агент = один `.md` файл
-- **6-слойная архитектура:** CLI → Application → Orchestration → Agent Runtime → Storage → Model Gateway
-- **Structured debate как формальный протокол**, а не свободная болтовня
-- **Cost-aware execution** — разные модели для разных шагов (Haiku/Sonnet/Opus)
-- **PM-агенты как ключевая дифференциация** — Startup PM, Delivery PM, Enterprise PM, Product Strategist PM
+**Key decisions at this stage:**
+- **CLI-first** — not web, but terminal. Terminal-first UX for a real workflow
+- **Python for MVP** — simplicity, AI library ecosystem
+- **Markdown + YAML frontmatter** for agent descriptions — one agent = one `.md` file
+- **6-layer architecture:** CLI → Application → Orchestration → Agent Runtime → Storage → Model Gateway
+- **Structured debate as a formal protocol**, not free-form chatting
+- **Cost-aware execution** — different models for different steps (Haiku/Sonnet/Opus)
+- **PM agents as a key differentiator** — Startup PM, Delivery PM, Enterprise PM, Product Strategist PM
 
-**Определён 7-этапный pipeline:**
-1. Intake (получение запроса)
-2. PM Brief (формулировка цели и ограничений)
-3. Independent Expert Pass (независимые мнения агентов)
-4. Conflict Detection (выявление расхождений)
-5. Debate (структурированный спор по конфликтам)
-6. Synthesis (итоговое решение)
-7. Artifacts (сохранение результатов)
+**A 7-stage pipeline was defined:**
+1. Intake (receiving the request)
+2. PM Brief (formulating goals and constraints)
+3. Independent Expert Pass (independent agent opinions)
+4. Conflict Detection (identifying disagreements)
+5. Debate (structured argument on conflicts)
+6. Synthesis (final decision)
+7. Artifacts (saving results)
 
-**Определены 4 типа агентов:**
+**4 agent types were defined:**
 - Coordinators (PM, tech lead)
-- Executors (инженеры, дизайнеры)
-- Thinkers (архитекторы, стратеги, исследователи)
+- Executors (engineers, designers)
+- Thinkers (architects, strategists, researchers)
 - Critics (security, performance, accessibility reviewers)
 
-Создана также краткая английская версия — `project_promt_for_claude.md` (37 строк) и executive summary — `project_description.md` (33 строки).
+A short English version was also created — `project_promt_for_claude.md` (37 lines) and an executive summary — `project_description.md` (33 lines).
 
 ---
 
-### Фаза 2: Исследование конкурентов и референсов (апрель 2026)
+### Phase 2: Competitor and Reference Research (April 2026)
 
-Проведён глубокий ресёрч рынка. Создан документ `projects.md` — анализ 8 GitHub-проектов как building blocks:
+In-depth market research was conducted. The document `projects.md` was created — an analysis of 8 GitHub projects as building blocks:
 
-| Проект | Stars | Роль в платформе |
-|--------|-------|-----------------|
-| **Superpowers** | 165k | Воркфлоу и скиллы, TDD, dispatch субагентов |
-| **Anthropic Skills** | 123k | Стандарт описания навыков агентов |
-| **gstack** | 81k | 23 роли, Claude Code setup — но только dev |
-| **claude-mem** | 66k | Shared memory между агентами и сессиями |
-| **cpr** | ~280 | Compress/preserve/resume контекста |
-| **claude-knowledge-graph** | ~22 | Граф знаний с Obsidian-интеграцией |
-| **GitNexus** | — | Knowledge graph для кодовых баз |
-| **gitVis3D** | ~6 | 3D-визуализация (бонус) |
+| Project | Stars | Role in the Platform |
+|---------|-------|---------------------|
+| **Superpowers** | 165k | Workflows and skills, TDD, sub-agent dispatch |
+| **Anthropic Skills** | 123k | Standard for agent skill descriptions |
+| **gstack** | 81k | 23 roles, Claude Code setup — but dev-only |
+| **claude-mem** | 66k | Shared memory between agents and sessions |
+| **cpr** | ~280 | Compress/preserve/resume context |
+| **claude-knowledge-graph** | ~22 | Knowledge graph with Obsidian integration |
+| **GitNexus** | — | Knowledge graph for codebases |
+| **gitVis3D** | ~6 | 3D visualization (bonus) |
 
-**Ключевой вывод:** все конкуренты (MetaGPT, CrewAI, gstack, Aider, ChatDev, OpenHands, Squad) — только dev/code. Никто не покрывает полный стартап-цикл.
+**Key takeaway:** all competitors (MetaGPT, CrewAI, gstack, Aider, ChatDev, OpenHands, Squad) are dev/code-only. None cover the full startup cycle.
 
 ---
 
-### Фаза 3: Ключевой поворот — от dev team к startup team (23 апреля 2026)
+### Phase 3: The Key Pivot — From Dev Team to Startup Team (April 23, 2026)
 
-**Это был самый важный момент в истории проекта.**
+**This was the most important moment in the project's history.**
 
-Исходная идея: "CLI-платформа для оркестрации dev-команды из AI-агентов" (инженеры, QA, architect, PM).
+The original idea: "A CLI platform for orchestrating a dev team of AI agents" (engineers, QA, architect, PM).
 
-**Поворот:** расширение scope с "dev team orchestrator" до "startup team orchestrator". Помимо инженеров появились:
+**The pivot:** expanding scope from "dev team orchestrator" to "startup team orchestrator". Beyond engineers, the following were added:
 
 1. **Strategy & Business** — CEO/Visionary, Business Analyst, Financial Modeler
 2. **Research** — Market Researcher, Competitive Analyst, UX Researcher
 3. **Marketing & Growth** — Growth Marketer, Content Strategist, Brand Designer
 4. **Design & Product** — Product Designer, UX Writer
 5. **Engineering** — Backend Engineer, Frontend Engineer, DevOps
-6. **Quality & Ops** — QA Strategist, Security Reviewer, PM-агенты
+6. **Quality & Ops** — QA Strategist, Security Reviewer, PM agents
 
-**Почему это важно:** это превратило проект из "ещё одного AI dev tool" в уникальный продукт без прямых конкурентов. Полный стартап-пайплайн: от валидации рынка до запуска продукта.
+**Why this matters:** it transformed the project from "yet another AI dev tool" into a unique product with no direct competitors. A complete startup pipeline: from market validation to product launch.
 
-Создан документ `research.md` (142 строки) — полный ресёрч: концепция, категории агентов, конкурентный анализ, целевая аудитория, монетизация.
+The document `research.md` (142 lines) was created — full research: concept, agent categories, competitive analysis, target audience, monetization.
 
 ---
 
-### Фаза 4: Позиционирование и бизнес-модель (конец апреля 2026)
+### Phase 4: Positioning and Business Model (late April 2026)
 
-**Определена целевая аудитория:**
-- Primary: solo-фаундеры и инди-хакеры (нужна полная команда)
-- Secondary: маленькие стартапы (2-5 чел), tech leads
-- Tertiary: акселераторы, фрилансеры, обучение
+**Target audience defined:**
+- Primary: solo founders and indie hackers (need a complete team)
+- Secondary: small startups (2-5 people), tech leads
+- Tertiary: accelerators, freelancers, education
 
-**Определена монетизация (open-core + SaaS):**
-- Free/OSS: CLI, 5 базовых ролей, 1 PM-стратегия
-- Pro ($29-49/мес): все 15+ ролей, все PM-стратегии, cost dashboard
-- Team ($99-199/мес): shared knowledge graph, team artifacts, CI/CD
+**Monetization defined (open-core + SaaS):**
+- Free/OSS: CLI, 5 basic roles, 1 PM strategy
+- Pro ($29-49/mo): all 15+ roles, all PM strategies, cost dashboard
+- Team ($99-199/mo): shared knowledge graph, team artifacts, CI/CD
 
-**Сформулирован pitch:**
-> "Первая CLI-платформа, где AI-агенты работают как полная стартап-команда: от валидации рынка до запуска продукта — стратеги, ресерчеры, маркетологи, инженеры спорят по существу и выдают артефакты."
+**Pitch formulated:**
+> "The first CLI platform where AI agents work as a complete startup team: from market validation to product launch — strategists, researchers, marketers, engineers argue on substance and produce artifacts."
 
-**Определены 4 уникальных дифференциатора:**
-1. Полный стартап, не только dev team
-2. Structured debate как формальный протокол
-3. PM как реальный оркестратор с разными стратегиями
+**4 unique differentiators defined:**
+1. Complete startup, not just a dev team
+2. Structured debate as a formal protocol
+3. PM as a real orchestrator with different strategies
 4. Cost-intelligent model routing + decision trail
 
 ---
 
-### Фаза 5: Техническая валидация (конец апреля 2026)
+### Phase 5: Technical Validation (late April 2026)
 
-**Ключевое техническое решение:** использовать Anthropic Python SDK напрямую (не Agent SDK) — для полного контроля над каждым вызовом, cost tracking и кастомной оркестрацией.
+**Key technical decision:** use the Anthropic Python SDK directly (not Agent SDK) — for full control over each call, cost tracking, and custom orchestration.
 
-**Определён формат артефактов:**
-- `brief.md` — задание от PM
-- `decision.md` — итоговое решение с rationale
-- `debate.md` — протокол дискуссии
-- `tasks.json` — декомпозиция задач
-- `cost.json` — стоимость выполнения
-- `agent-opinions/*.md` — мнения каждого агента
-- `conflicts.json` — выявленные конфликты
+**Artifact format defined:**
+- `brief.md` — assignment from the PM
+- `decision.md` — final decision with rationale
+- `debate.md` — discussion transcript
+- `tasks.json` — task decomposition
+- `cost.json` — execution cost
+- `agent-opinions/*.md` — each agent's opinion
+- `conflicts.json` — identified conflicts
 
 ---
 
-### Фаза 6: Scaffolding и первый код (3 мая 2026)
+### Phase 6: Scaffolding and First Code (May 3, 2026)
 
-Проект перешёл из фазы проектирования в фазу разработки.
+The project moved from the design phase to the development phase.
 
-**Создана полная структура проекта (scaffolding):**
-- 6-слойная архитектура реализована как Python-пакет `src/agency/`
+**Full project structure created (scaffolding):**
+- 6-layer architecture implemented as Python package `src/agency/`
 - CLI Layer (Typer), Core (Pydantic models), Orchestrator (7-stage pipeline), Agent Runtime (registry + .md parser), Storage (sessions, artifacts, costs), Gateway (Anthropic SDK + model router)
-- 4 PM-агента с полными .md описаниями
+- 4 PM agents with full .md descriptions
 - 2 team presets (mvp-startup, full-product)
-- 8 тестов, все проходят
-- Команда `agency` работает из терминала
+- 8 tests, all passing
+- `agency` command works from the terminal
 
-**Реализованы CLI-команды:**
-- `agency agents list` — Rich-таблица всех агентов с категориями и risk bars
-- `agency agents show <slug>` — карточка агента с аватаром, model policy, strengths/weaknesses
-- `agency team create` — интерактивный выбор PM с галереей аватаров, выбор агентов
-
----
-
-### Фаза 7: Ренейминг в Matoi (3 мая 2026)
-
-Проект нуждался в уникальном имени. После обширного поиска по древнеримским, скандинавским, японским, белорусским и древнерусским названиям выбрано:
-
-**Matoi (纏)** — знамя японских пожарных, за которым собирается команда.
-
-- PyPI, npm, GitHub — всё свободно
-- Метафора идеально подходит: знамя → сбор команды → координированное действие
-- Короткое (5 букв), запоминаемое, уникальное
-
-**Переименование:**
-- Пакет `agency` → `matoi`
-- CLI команда `agency` → `matoi`
-- Подкоманда `agents` → `roster` (короче, оригинальнее)
-
-```
-matoi roster list          # таблица агентов
-matoi roster show startup-pm  # карточка агента
-matoi team create my-startup  # интерактивный выбор PM
-matoi team show my-startup    # вывод команды с аватарами
-```
+**Implemented CLI commands:**
+- `agency agents list` — Rich table of all agents with categories and risk bars
+- `agency agents show <slug>` — agent card with avatar, model policy, strengths/weaknesses
+- `agency team create` — interactive PM selection with avatar gallery, agent selection
 
 ---
 
-### Фаза 8: Агенты с поведенческими паттернами (3 мая 2026)
+### Phase 7: Renaming to Matoi (May 3, 2026)
 
-Добавлено 10 новых агентов с глубокими поведенческими описаниями, вдохновлёнными проектом [Superpowers](https://github.com/obra/superpowers). Каждый агент имеет:
-- Iron Law (главное правило)
+The project needed a unique name. After extensive search across ancient Roman, Norse, Japanese, Belarusian, and Old Russian names, the choice was:
+
+**Matoi (纏)** — a Japanese firefighter's standard, around which the team rallies.
+
+- PyPI, npm, GitHub — all available
+- The metaphor is a perfect fit: standard → team assembly → coordinated action
+- Short (5 letters), memorable, unique
+
+**Renaming:**
+- Package `agency` → `matoi`
+- CLI command `agency` → `matoi`
+- Subcommand `agents` → `roster` (shorter, more distinctive)
+
+```
+matoi roster list          # agent table
+matoi roster show startup-pm  # agent card
+matoi team create my-startup  # interactive PM selection
+matoi team show my-startup    # display team with avatars
+```
+
+---
+
+### Phase 8: Agents with Behavioral Patterns (May 3, 2026)
+
+10 new agents were added with deep behavioral descriptions, inspired by the [Superpowers](https://github.com/obra/superpowers) project. Each agent has:
+- Iron Law (core rule)
 - Self-review checklist
-- Escalation rules (когда остановиться)
-- Debate style (как спорить)
-- Anti-patterns (что не делать)
+- Escalation rules (when to stop)
+- Debate style (how to argue)
+- Anti-patterns (what not to do)
 
-**Executors (⚙️):** Backend Engineer (TDD), Frontend Engineer (user-focused), Product Designer (design-before-code), Growth Marketer (GTM experiments)
+**Executors:** Backend Engineer (TDD), Frontend Engineer (user-focused), Product Designer (design-before-code), Growth Marketer (GTM experiments)
 
-**Thinkers (🧠):** Market Researcher (data-driven), Competitive Analyst (differentiation), Business Analyst (financial modeling), UX Researcher (user evidence)
+**Thinkers:** Market Researcher (data-driven), Competitive Analyst (differentiation), Business Analyst (financial modeling), UX Researcher (user evidence)
 
-**Critics (🔍):** Security Reviewer (adversarial, OWASP), QA Strategist (spec compliance, distrustful by design)
+**Critics:** Security Reviewer (adversarial, OWASP), QA Strategist (spec compliance, distrustful by design)
 
-Итого: **14 агентов** в 6 категориях.
-
----
-
-### Фаза 9: Pixel-art аватары (3 мая 2026)
-
-Каждый из 14 агентов получил уникальный pixel-art портрет (128x128 PNG). Аватары автоматически конвертируются в Braille Unicode для отображения в терминале.
-
-Система аватаров:
-- PNG-файлы в `assets/avatars/`
-- Автоматический ресайз и конвертация в Braille при загрузке (через Pillow)
-- Fallback на .txt если Pillow не установлен
-- Цветной вывод через `chafa` (опционально)
+Total: **14 agents** in 6 categories.
 
 ---
 
-### Фаза 10: MVP Pipeline — matoi run работает (3 мая 2026)
+### Phase 9: Pixel-Art Avatars (May 3, 2026)
 
-Подключен Anthropic API. Реализован 3-стадийный pipeline:
+Each of the 14 agents received a unique pixel-art portrait (128x128 PNG). Avatars are automatically converted to Braille Unicode for terminal display.
 
-1. **PM Brief** — PM формулирует задачу (Haiku — дёшево)
-2. **Expert Pass** — каждый агент даёт независимое мнение (Sonnet/Opus по policy)
-3. **Synthesis** — PM синтезирует финальное решение (Opus — критическое решение)
+Avatar system:
+- PNG files in `assets/avatars/`
+- Automatic resize and Braille conversion on load (via Pillow)
+- Fallback to .txt if Pillow is not installed
+- Color output via `chafa` (optional)
 
-**Артефакты сохраняются в файлы:**
+---
+
+### Phase 10: MVP Pipeline — matoi run Works (May 3, 2026)
+
+Anthropic API connected. A 3-stage pipeline implemented:
+
+1. **PM Brief** — PM formulates the task (Haiku — cheap)
+2. **Expert Pass** — each agent provides an independent opinion (Sonnet/Opus per policy)
+3. **Synthesis** — PM synthesizes the final decision (Opus — critical decision)
+
+**Artifacts saved to files:**
 - `brief.md`, `opinion_*.md`, `decision.md`, `cost.json`
 
-**Также реализовано:**
-- `matoi task plan` — dry run, показывает маршрутизацию моделей без API вызовов
-- Budget enforcement — `--budget 1.0` ограничивает расход
-- Cost tracking по каждому вызову
+**Also implemented:**
+- `matoi task plan` — dry run, shows model routing without API calls
+- Budget enforcement — `--budget 1.0` limits spending
+- Cost tracking per call
 
-Первый тестовый прогон: "Validate market for AI-powered pet care" — Startup PM + Market Researcher + Backend Engineer. PM выдал 4-недельный план, ресёрчер дал анализ рынка с 13 источниками, инженер предложил стек. PM синтезировал решение: "AI Pet Health Triage for Dog Owners, landing page first."
+First test run: "Validate market for AI-powered pet care" — Startup PM + Market Researcher + Backend Engineer. PM produced a 4-week plan, researcher provided a market analysis with 13 sources, engineer suggested a tech stack. PM synthesized the decision: "AI Pet Health Triage for Dog Owners, landing page first."
 
 ---
 
-### Фаза 11: Knowledge Graph Memory (3 мая 2026)
+### Phase 11: Knowledge Graph Memory (May 3, 2026)
 
-Реализована система памяти на основе knowledge graph.
+A memory system based on a knowledge graph was implemented.
 
-**Как работает:**
-- После каждого `matoi run` Haiku извлекает сущности из артефактов (~$0.01/сессия)
-- Nodes: decisions, insights, risks, rejected alternatives — с тегами
+**How it works:**
+- After each `matoi run`, Haiku extracts entities from artifacts (~$0.01/session)
+- Nodes: decisions, insights, risks, rejected alternatives — with tags
 - Edges: related_to, builds_on, contradicts, mitigates
-- Новые ноды автоматически связываются с предыдущими через shared tags
-- При следующем run PM получает релевантный контекст из графа
+- New nodes are automatically linked to previous ones via shared tags
+- On the next run, the PM receives relevant context from the graph
 
-**CLI команды:**
-- `matoi memory show` — обзор графа: ноды, рёбра, сессии
-- `matoi memory search "query"` — текстовый поиск
-- `matoi memory clear` — очистка
+**CLI commands:**
+- `matoi memory show` — graph overview: nodes, edges, sessions
+- `matoi memory search "query"` — text search
+- `matoi memory clear` — clear
 
-Граф хранится в `memory/graph.json`. Первый тест: после двух сессий — 8 nodes, 6 edges.
+Graph is stored in `memory/graph.json`. First test: after two sessions — 8 nodes, 6 edges.
 
 ---
 
-### Фаза 12: Новый UX — matoi как инструмент для любого проекта (3 мая 2026)
+### Phase 12: New UX — matoi as a Tool for Any Project (May 3, 2026)
 
-**Ключевая переделка:** matoi теперь работает не внутри своего репо, а в любой директории пользователя.
+**Key redesign:** matoi now works not inside its own repo, but in any user directory.
 
-**Новый flow:**
+**New flow:**
 ```
-cd ~/my-project      # пользователь в своём проекте
-matoi                # запуск → онбординг
+cd ~/my-project      # user is in their project
+matoi                # launch → onboarding
 
-→ Step 1: API key (сохраняется глобально в ~/.matoi/config.json)
-→ Step 2: Project scan (языки, фреймворки, git, тесты, CI)
-→ Step 3: Интерактивная сборка команды с PM аватарами
+→ Step 1: API key (saved globally in ~/.matoi/config.json)
+→ Step 2: Project scan (languages, frameworks, git, tests, CI)
+→ Step 3: Interactive team assembly with PM avatars
 
-→ Создаётся ./matoi/ в проекте:
-   matoi/config.json      # команда и настройки
+→ Creates ./matoi/ in the project:
+   matoi/config.json      # team and settings
    matoi/memory/           # knowledge graph
-   matoi/artifacts/        # результаты сессий
+   matoi/artifacts/        # session results
 ```
 
-**Реализовано:**
-- `matoi` без аргументов = онбординг или статус
-- Project Scanner: определяет языки, фреймворки, git history, CI, Docker, тесты
-- Глобальный конфиг `~/.matoi/` для API key
-- Проектный конфиг `./matoi/` для команды и артефактов
-- `matoi run "task"` работает из любой инициализированной директории
+**Implemented:**
+- `matoi` with no arguments = onboarding or status
+- Project Scanner: detects languages, frameworks, git history, CI, Docker, tests
+- Global config `~/.matoi/` for API key
+- Project config `./matoi/` for team and artifacts
+- `matoi run "task"` works from any initialized directory
 
 ---
 
-### Фаза 13: MemPalace, визуализация, cost tracking (4 мая 2026)
+### Phase 13: MemPalace, Visualization, Cost Tracking (May 4, 2026)
 
-- **MemPalace** заменил самодельный knowledge graph: 433 drawers, семантический поиск (96.6% recall), MCP с 29 инструментами
-- **code-review-graph**: 210 nodes, 1317 edges, 28 MCP tools для AI-навигации по коду
-- **CodeCharta**: 3D-город кода (.cc.json.gz)
-- **matoi viz**: команды graph/city/build/status
-- **Реальный cost tracking**: Haiku $1/$5, Sonnet $3/$15, Opus $15/$75 per 1M tokens
-- **matoi cost**: агрегация стоимости по всем сессиям с breakdown по моделям
+- **MemPalace** replaced the homegrown knowledge graph: 433 drawers, semantic search (96.6% recall), MCP with 29 tools
+- **code-review-graph**: 210 nodes, 1317 edges, 28 MCP tools for AI code navigation
+- **CodeCharta**: 3D code city (.cc.json.gz)
+- **matoi viz**: graph/city/build/status commands
+- **Real cost tracking**: Haiku $1/$5, Sonnet $3/$15, Opus $15/$75 per 1M tokens
+- **matoi cost**: cost aggregation across all sessions with breakdown by model
 
 ---
 
-### Фаза 14: Streaming и Debate Engine (4 мая 2026)
+### Phase 14: Streaming and Debate Engine (May 4, 2026)
 
-**Streaming:** текст появляется token-by-token вместо ожидания полного ответа. Используется `client.messages.stream()` из Anthropic SDK.
+**Streaming:** text appears token-by-token instead of waiting for the full response. Uses `client.messages.stream()` from the Anthropic SDK.
 
-**Conflict Detection + Debate Engine — полный 5-стадийный pipeline:**
+**Conflict Detection + Debate Engine — full 5-stage pipeline:**
 
 ```
 1. PM Brief (Haiku)
 2. Expert Pass (Sonnet/Opus, streaming)
-3. Conflict Detection (Haiku -- сканирует расхождения)
+3. Conflict Detection (Haiku -- scans for disagreements)
      |
-     +-- конфликты найдены (severity >= 0.5) --> Debate
+     +-- conflicts found (severity >= 0.5) --> Debate
      |
-     +-- нет конфликтов --> пропуск, сразу в Synthesis
+     +-- no conflicts --> skip, go straight to Synthesis
      |
 4. Debate (structured rounds: claim/critique/concession/recommendation)
-5. Synthesis (Opus, streaming -- PM решает с учётом дебатов)
+5. Synthesis (Opus, streaming -- PM decides incorporating debate results)
 ```
 
 **Debate protocol:**
-- Каждый несогласный агент формулирует claim + critique + concession + recommendation
-- Max rounds настраивается (default: 2)
-- Budget-aware: пропускает debate если бюджет исчерпан
-- Артефакт: debate.md с полным транскриптом
+- Each dissenting agent formulates claim + critique + concession + recommendation
+- Max rounds configurable (default: 2)
+- Budget-aware: skips debate if budget is exhausted
+- Artifact: debate.md with full transcript
 
 ---
 
-### Фаза 15: MVP polish (4 мая 2026)
+### Phase 15: MVP Polish (May 4, 2026)
 
-- **Selective agent activation** -- Haiku анализирует задачу, выбирает релевантных агентов, пропускает нерелевантных
-- **3 новых агента** (всего 17): Content Strategist, DevOps Engineer, Financial Modeler
-- **matoi team list** -- просмотр всех сохранённых команд
-- Убран дубль `matoi task run` (оставлен `matoi run` + `matoi task plan`)
+- **Selective agent activation** -- Haiku analyzes the task, selects relevant agents, skips irrelevant ones
+- **3 new agents** (total 17): Content Strategist, DevOps Engineer, Financial Modeler
+- **matoi team list** -- view all saved teams
+- Removed the duplicate `matoi task run` (kept `matoi run` + `matoi task plan`)
 
 ---
 
-### Фаза 16: Interactive REPL (4 мая 2026)
+### Phase 16: Interactive REPL (May 4, 2026)
 
-**Matoi стал интерактивным.** Вместо one-shot `matoi run "task"` -- полноценная сессия:
+**Matoi became interactive.** Instead of one-shot `matoi run "task"` -- a full-featured session:
 
-1. `matoi` открывает REPL с промптом
-2. Выбор PM, описание цели
-3. PM рекомендует команду на сессию
-4. Пользователь вводит задачи, агенты отвечают (streaming + markdown)
+1. `matoi` opens a REPL with a prompt
+2. Choose PM, describe the goal
+3. PM recommends a team for the session
+4. User enters tasks, agents respond (streaming + markdown)
 5. `/commit` -- agents review diff, debate if conflicts, commit, update graph
 
-Команды сессии: /help, /team, /agents, /cost, /history, /commit, /quit
+Session commands: /help, /team, /agents, /cost, /history, /commit, /quit
 
 ---
 
-### Фаза 17: Phase B TUI (4 мая 2026)
+### Phase 17: Phase B TUI (May 4, 2026)
 
-Полноценный TUI через prompt_toolkit:
+Full-featured TUI via prompt_toolkit:
 
-- Цветной промпт `[project/PM] >` (зелёный = ready, жёлтый = working)
+- Colored prompt `[project/PM] >` (green = ready, yellow = working)
 - Bottom status bar: PM, team size, tokens, cost
-- Tab-автокомплит команд (fuzzy: `/co` -> `/commit`, `/cost`)
-- Tab-автокомплит @агентов (fuzzy)
-- Persistent history (`~/.matoi/history`, стрелки, Ctrl+R)
-- Alt+Enter для мультилайн
+- Tab autocomplete for commands (fuzzy: `/co` -> `/commit`, `/cost`)
+- Tab autocomplete for @agents (fuzzy)
+- Persistent history (`~/.matoi/history`, arrow keys, Ctrl+R)
+- Alt+Enter for multiline
 - Live markdown rendering (Rich Live + Markdown, code highlighting)
 - Keybindings: Ctrl+C cancel, Ctrl+D quit, Ctrl+L clear
 
 ---
 
-### Фаза 18: Error handling, history, тесты (4 мая 2026)
+### Phase 18: Error Handling, History, Tests (May 4, 2026)
 
-- **Error handling:** retry с backoff на rate limits (429), connection errors, server errors (5xx), overloaded (529). Auth errors -- immediate fail. REPL ловит все ошибки, сессия не падает.
-- **matoi history** -- просмотр прошлых сессий, markdown-рендер артефактов, cost breakdown
-- **33 теста** (было 8): cost tracker, model router, pricing, config, scanner, conflict, debate, activation, registry
+- **Error handling:** retry with backoff on rate limits (429), connection errors, server errors (5xx), overloaded (529). Auth errors -- immediate fail. REPL catches all errors, session doesn't crash.
+- **matoi history** -- view past sessions, markdown-render artifacts, cost breakdown
+- **33 tests** (was 8): cost tracker, model router, pricing, config, scanner, conflict, debate, activation, registry
 
 ---
 
-### Текущее состояние (4 мая 2026)
+### Current State (May 4, 2026)
 
-**Статус:** полноценный MVP. 30 коммитов, 33 теста, 17 агентов.
+**Status:** fully functional MVP. 30 commits, 33 tests, 17 agents.
 
-**Что работает:**
-- `matoi` -- интерактивная REPL с TUI (prompt_toolkit, autocomplete, history, status bar)
+**What works:**
+- `matoi` -- interactive REPL with TUI (prompt_toolkit, autocomplete, history, status bar)
 - `matoi run "task"` -- one-shot pipeline
-- `matoi history` -- просмотр сессий и артефактов
-- `matoi cost` -- стоимость по сессиям и моделям
-- `matoi roster list/show` -- 17 агентов с pixel-art аватарами
-- `matoi team create/show/list` -- команды
+- `matoi history` -- view sessions and artifacts
+- `matoi cost` -- cost breakdown by sessions and models
+- `matoi roster list/show` -- 17 agents with pixel-art avatars
+- `matoi team create/show/list` -- teams
 - `matoi memory show/search/mine/wake-up` -- MemPalace (433 drawers)
-- `matoi viz graph/city/build/status` -- визуализации
-- 6-стадийный pipeline: activation, brief, expert, conflict, debate, synthesis
+- `matoi viz graph/city/build/status` -- visualizations
+- 6-stage pipeline: activation, brief, expert, conflict, debate, synthesis
 - Streaming + live markdown rendering
-- Selective agent activation (PM рекомендует кого включить)
+- Selective agent activation (PM recommends who to include)
 - Pre-commit debate (/commit)
 - Real cost tracking ($1/$5, $3/$15, $15/$75)
-- Error handling с retry и graceful fallback
+- Error handling with retry and graceful fallback
 - MemPalace auto-save hooks
 - code-review-graph MCP (28 tools, auto-update)
-- 33 теста, все проходят
+- 33 tests, all passing
 
-**Что предстоит:**
+**What's next:**
 - GitHub repo + PyPI + Homebrew
 - Agent marketplace
 
 ---
 
-## Ключевые принципы, определённые за всё время
+## Key Principles Established Over Time
 
-1. **Debate ради качества, не ради шоу** — агенты спорят только при реальных конфликтах
-2. **Selective activation** — не все агенты активны всегда
-3. **Артефакты > разговоры** — результат работы = файлы, не текст чата
-4. **Cost-awareness** — дешёвые модели для рутины, дорогие для стратегии
-5. **PM управляет** — не хаотичный peer-to-peer, а управляемый процесс
-6. **CLI-first** — терминал как основной интерфейс
+1. **Debate for quality, not for show** — agents argue only when real conflicts exist
+2. **Selective activation** — not all agents are always active
+3. **Artifacts > conversations** — the work product = files, not chat text
+4. **Cost-awareness** — cheap models for routine, expensive for strategy
+5. **PM is in charge** — not chaotic peer-to-peer, but a managed process
+6. **CLI-first** — the terminal as the primary interface
 
 ---
 
-## Эволюция идеи (визуально)
+## Idea Evolution (visual)
 
 ```
-"AI dev team в CLI"
+"AI dev team in CLI"
        │
        ▼
-"Multi-agent orchestrator с debate"
+"Multi-agent orchestrator with debate"
        │
        ▼
-"AI startup team — от ресёрча до запуска"  ← ключевой поворот
+"AI startup team — from research to launch"  ← key pivot
        │
        ▼
-"Полная виртуальная стартап-команда
- с PM-оркестрацией, structured debate
- и cost-intelligent routing"
+"Complete virtual startup team
+ with PM orchestration, structured debate
+ and cost-intelligent routing"
        │
        ▼
-"纏 Matoi — CLI-платформа с 14 агентами,  ← ренейминг + реализация
- pixel-art персонажами и работающим CLI"
+"纏 Matoi — CLI platform with 14 agents,      ← renaming + implementation
+ pixel-art characters and a working CLI"
        │
        ▼
-"Работающий MVP: pipeline с API,           ← первый реальный прогон
+"Working MVP: pipeline with API,               ← first real run
  knowledge graph memory, onboarding
- в любом проекте"
+ in any project"
 ```
 
 ---
 
-## Структура проекта
+## Project Structure
 
 ```
 matoi/
-├── src/matoi/              # Основной код (6 слоёв)
+├── src/matoi/              # Main code (6 layers)
 │   ├── cli/                # CLI Layer (Typer + Rich)
 │   ├── core/               # Pydantic domain models
 │   ├── orchestrator/       # 7-stage pipeline, debate, conflict, synthesis
 │   ├── agents/             # Registry, runtime, activation
 │   ├── storage/            # Artifacts, sessions, costs
 │   └── gateway/            # Anthropic SDK, model router
-├── agents/                 # 14 агентов в .md (YAML frontmatter)
-│   ├── coordinators/       # 4 PM-агента
+├── agents/                 # 14 agents in .md (YAML frontmatter)
+│   ├── coordinators/       # 4 PM agents
 │   ├── executors/          # Backend, Frontend, Designer, Marketer
 │   ├── thinkers/           # Researcher, Analyst, UX
 │   └── critics/            # Security, QA
-├── teams/                  # Team presets (.yaml) и сохранённые команды (.json)
+├── teams/                  # Team presets (.yaml) and saved teams (.json)
 ├── assets/avatars/         # 14 pixel-art PNG + Braille .txt
-├── artifacts/              # Выходные артефакты pipeline
-├── tests/                  # pytest (8 тестов)
-├── scripts/                # Генераторы аватаров
-└── docs/                   # Проектная документация
+├── artifacts/              # Pipeline output artifacts
+├── tests/                  # pytest (8 tests)
+├── scripts/                # Avatar generators
+└── docs/                   # Project documentation
 ```
 
 ---
 
-## Документы проекта
+## Project Documents
 
-| Документ | Назначение |
-|----------|-----------|
-| `docs/project_promt.md` | Детальная техническая спецификация (RU) |
-| `docs/project_promt_for_claude.md` | Краткий бриф для Claude (EN) |
+| Document | Purpose |
+|----------|---------|
+| `docs/project_promt.md` | Detailed technical specification (RU) |
+| `docs/project_promt_for_claude.md` | Short brief for Claude (EN) |
 | `docs/project_description.md` | Executive summary |
-| `docs/projects.md` | Анализ 11 референсных проектов |
-| `docs/research.md` | Ресёрч рынка, конкуренты, бизнес-модель |
-| `docs/obsidian_claude_code_memory.md` | Гайд по Obsidian + Claude Code памяти |
-| `docs/project_history.md` | Этот документ — история проекта |
-| `CLAUDE.md` | Инструкции для Claude Code |
-| `README.md` | Описание проекта |
+| `docs/projects.md` | Analysis of 11 reference projects |
+| `docs/research.md` | Market research, competitors, business model |
+| `docs/obsidian_claude_code_memory.md` | Guide on Obsidian + Claude Code memory |
+| `docs/project_history.md` | This document — project history |
+| `CLAUDE.md` | Instructions for Claude Code |
+| `README.md` | Project description |

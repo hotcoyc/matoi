@@ -1,82 +1,82 @@
-# Obsidian + Claude Code: система памяти и знаний
+# Obsidian + Claude Code: Memory and Knowledge System
 
-Гайд по интеграции Obsidian vault с Claude Code для построения персистентной памяти проекта.
-
----
-
-## Зачем это нужно
-
-Claude Code имеет встроенную память (`~/.claude/projects/.../memory/`), но она ограничена: плоские `.md`-файлы, нет графа связей, нет визуализации. Obsidian vault решает эти проблемы:
-
-- **Граф связей** — `[[wikilinks]]` между заметками создают knowledge graph
-- **Визуализация** — graph view, canvas, backlinks
-- **Теги и поиск** — мгновенный полнотекстовый поиск по всему vault
-- **Плагины** — Dataview, Templater, Calendar и 1500+ других
-- **Всё в Markdown** — Claude Code нативно читает и пишет `.md`
+A guide on integrating an Obsidian vault with Claude Code to build persistent project memory.
 
 ---
 
-## Метод 1: Прямой доступ (zero setup)
+## Why This Is Needed
 
-Claude Code запускается из директории vault. Vault — это просто папка с `.md`-файлами.
+Claude Code has built-in memory (`~/.claude/projects/.../memory/`), but it's limited: flat `.md` files, no link graph, no visualization. An Obsidian vault solves these problems:
 
-### Настройка
+- **Link graph** — `[[wikilinks]]` between notes create a knowledge graph
+- **Visualization** — graph view, canvas, backlinks
+- **Tags and search** — instant full-text search across the entire vault
+- **Plugins** — Dataview, Templater, Calendar, and 1500+ others
+- **Everything in Markdown** — Claude Code natively reads and writes `.md`
+
+---
+
+## Method 1: Direct Access (zero setup)
+
+Claude Code is launched from the vault directory. A vault is simply a folder with `.md` files.
+
+### Setup
 
 ```bash
 cd ~/ObsidianVault && claude
 ```
 
-Создать `CLAUDE.md` в корне vault:
+Create `CLAUDE.md` at the vault root:
 
 ```markdown
 ## Vault Conventions
-- Все заметки используют [[wikilinks]] для перекрёстных ссылок
-- YAML frontmatter обязателен
-- Не удалять и не переименовывать существующие заметки без подтверждения
+- All notes use [[wikilinks]] for cross-references
+- YAML frontmatter is required
+- Do not delete or rename existing notes without confirmation
 
 ## Memory
-- brain/Index.md — накопленные паттерны и решения
-- brain/Decisions.md — архитектурные решения
-- brain/Patterns.md — выявленные паттерны
-- brain/Mistakes.md — ошибки, которых стоит избегать
+- brain/Index.md — accumulated patterns and decisions
+- brain/Decisions.md — architectural decisions
+- brain/Patterns.md — identified patterns
+- brain/Mistakes.md — mistakes to avoid
 ```
 
-### Структура vault
+### Vault Structure
 
 ```
 vault/
-├── CLAUDE.md           # инструкции для Claude Code
-├── brain/              # память агента
+├── CLAUDE.md           # instructions for Claude Code
+├── brain/              # agent memory
 │   ├── Index.md
 │   ├── Decisions.md
 │   ├── Patterns.md
 │   └── Mistakes.md
-├── projects/           # проекты
+├── projects/           # projects
 │   └── ai-agency-platform/
-├── daily-notes/        # ежедневные заметки
-└── inbox/              # входящие
+├── daily-notes/        # daily notes
+└── inbox/              # inbox
 ```
 
-**Плюсы:** нулевая сложность, работает сразу, бесплатно
-**Минусы:** нет структурированного поиска, только ручное чтение файлов по путям
+**Pros:** zero complexity, works immediately, free
+**Cons:** no structured search, only manual file reading by path
 
 ---
 
-## Метод 2: MCP-сервер для Obsidian
+## Method 2: MCP Server for Obsidian
 
-MCP-сервер даёт Claude Code набор инструментов (tools) для работы с vault: поиск, чтение, запись, теги. Работает из любой директории.
+An MCP server gives Claude Code a set of tools for working with the vault: search, read, write, tags. Works from any directory.
 
-### Вариант A: `obsidian-mcp` (рекомендуемый)
+### Option A: `obsidian-mcp` (recommended)
 
-Работает напрямую с файлами. Obsidian не обязан быть запущен.
+Works directly with files. Obsidian does not need to be running.
 
-**Установка:**
+**Installation:**
 
 ```bash
-# Требуется Node.js 20+
+# Requires Node.js 20+
 ```
 
-Добавить в `~/.claude/settings.json`:
+Add to `~/.claude/settings.json`:
 
 ```json
 {
@@ -89,17 +89,17 @@ MCP-сервер даёт Claude Code набор инструментов (tools
 }
 ```
 
-Перезапустить Claude Code.
+Restart Claude Code.
 
-**Доступные инструменты:**
+**Available tools:**
 - `read-note`, `create-note`, `edit-note`, `delete-note`, `move-note`
-- `search-vault` — полнотекстовый поиск
+- `search-vault` — full-text search
 - `add-tags`, `remove-tags`, `rename-tag`
 - `create-directory`, `list-available-vaults`
 
-### Вариант B: Filesystem MCP (от Anthropic)
+### Option B: Filesystem MCP (by Anthropic)
 
-Минимальный MCP — стандартный файловый сервер:
+Minimal MCP — a standard file server:
 
 ```json
 {
@@ -112,13 +112,13 @@ MCP-сервер даёт Claude Code набор инструментов (tools
 }
 ```
 
-### Вариант C: `mcp-obsidian` (через REST API)
+### Option C: `mcp-obsidian` (via REST API)
 
-Требует запущенный Obsidian с плагином **Local REST API**.
+Requires Obsidian to be running with the **Local REST API** plugin.
 
-1. В Obsidian: Settings -> Community Plugins -> установить "Local REST API"
-2. Включить плагин, запомнить API-ключ и порт (обычно 27124)
-3. Конфигурация:
+1. In Obsidian: Settings -> Community Plugins -> install "Local REST API"
+2. Enable the plugin, note the API key and port (usually 27124)
+3. Configuration:
 
 ```json
 {
@@ -127,7 +127,7 @@ MCP-сервер даёт Claude Code набор инструментов (tools
       "command": "npx",
       "args": ["-y", "@mseep/obsidian-mcp-server"],
       "env": {
-        "OBSIDIAN_API_KEY": "ваш-ключ",
+        "OBSIDIAN_API_KEY": "your-key",
         "OBSIDIAN_API_PORT": "27124"
       }
     }
@@ -135,38 +135,38 @@ MCP-сервер даёт Claude Code набор инструментов (tools
 }
 ```
 
-> **Важно:** Python-based MCP-серверы имеют известный баг `BrokenPipeError` в Claude Code CLI. Используйте Node.js-реализации.
+> **Important:** Python-based MCP servers have a known `BrokenPipeError` bug in Claude Code CLI. Use Node.js implementations.
 
-**Плюсы MCP:** структурированный поиск, работает из любой директории, несколько vault
-**Минусы:** зависимость от Node.js/npx, read/write доступ — делать бэкап vault
+**MCP Pros:** structured search, works from any directory, multiple vaults
+**MCP Cons:** Node.js/npx dependency, read/write access — back up your vault
 
 ---
 
-## Метод 3: Автоматическая память через хуки Claude Code
+## Method 3: Automatic Memory via Claude Code Hooks
 
-Claude Code hooks извлекают инсайты из каждой сессии и сохраняют в vault. Память растёт автоматически.
+Claude Code hooks extract insights from each session and save them to the vault. Memory grows automatically.
 
-### Архитектура
+### Architecture
 
 ```
-Сессия завершается
-  → Hook "Stop" срабатывает
-    → Python-скрипт анализирует транскрипт
-      → Claude API (Haiku) извлекает паттерны/ошибки/решения
-        → Markdown-заметки в vault
-          → CLAUDE.md ссылается на Index.md
-            → Следующая сессия читает накопленные знания
+Session ends
+  → "Stop" hook fires
+    → Python script analyzes the transcript
+      → Claude API (Haiku) extracts patterns/mistakes/decisions
+        → Markdown notes in the vault
+          → CLAUDE.md references Index.md
+            → Next session reads accumulated knowledge
 ```
 
-### Настройка
+### Setup
 
-1. Создать структуру:
+1. Create the structure:
 
 ```bash
 mkdir -p ~/ObsidianVault/claude-memory/{Patterns,Mistakes,Decisions,Context,Sessions}
 ```
 
-2. Настроить хуки в `~/.claude/settings.json`:
+2. Configure hooks in `~/.claude/settings.json`:
 
 ```json
 {
@@ -186,38 +186,38 @@ mkdir -p ~/ObsidianVault/claude-memory/{Patterns,Mistakes,Decisions,Context,Sess
 }
 ```
 
-3. Создать скрипт `~/.claude/hooks/memory_extractor.py`:
-   - Получает JSON через stdin (session_id, project directory)
-   - Отправляет транскрипт в Claude API (Haiku — ~$0.01/сессия)
-   - Создаёт `.md`-файлы с YAML frontmatter
-   - Обновляет `Index.md`
+3. Create the script `~/.claude/hooks/memory_extractor.py`:
+   - Receives JSON via stdin (session_id, project directory)
+   - Sends the transcript to the Claude API (Haiku — ~$0.01/session)
+   - Creates `.md` files with YAML frontmatter
+   - Updates `Index.md`
 
-4. Экспортировать API-ключ:
+4. Export the API key:
 
 ```bash
 export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
-5. Добавить в проектный `CLAUDE.md`:
+5. Add to the project's `CLAUDE.md`:
 
 ```markdown
 ## Project Memory
-- ~/ObsidianVault/claude-memory/Index.md — накопленные паттерны
-- ~/ObsidianVault/claude-memory/Context/ — контекст проектов
-- ~/ObsidianVault/claude-memory/Decisions/ — архитектурные решения
-- ~/ObsidianVault/claude-memory/Mistakes/ — известные ошибки
+- ~/ObsidianVault/claude-memory/Index.md — accumulated patterns
+- ~/ObsidianVault/claude-memory/Context/ — project context
+- ~/ObsidianVault/claude-memory/Decisions/ — architectural decisions
+- ~/ObsidianVault/claude-memory/Mistakes/ — known mistakes
 ```
 
-**Плюсы:** полностью автоматическая, растёт с каждой сессией, дёшево (~$0.01/сессия)
-**Минусы:** требует API key, сложная первоначальная настройка (~1-2 часа), нужна периодическая чистка
+**Pros:** fully automatic, grows with each session, cheap (~$0.01/session)
+**Cons:** requires an API key, complex initial setup (~1-2 hours), needs periodic cleanup
 
 ---
 
-## Метод 4: Готовые шаблоны vault
+## Method 4: Ready-Made Vault Templates
 
 ### Obsidian Mind (`breferrari/obsidian-mind`)
 
-Наиболее полное готовое решение: vault-шаблон с 5 хуками, 18 slash-командами и 9 подагентами.
+The most complete ready-made solution: a vault template with 5 hooks, 18 slash commands, and 9 sub-agents.
 
 ```bash
 npm install -g shardmind
@@ -225,22 +225,22 @@ mkdir my-vault && cd my-vault
 shardmind install github:breferrari/obsidian-mind
 ```
 
-**Что включено:**
-- `CLAUDE.md` — полный мануал для агента
-- Папка `brain/` — цели, решения, паттерны, ошибки, воспоминания
+**What's included:**
+- `CLAUDE.md` — complete agent manual
+- `brain/` folder — goals, decisions, patterns, mistakes, memories
 - 5 lifecycle hooks: SessionStart, UserPromptSubmit, PostToolUse, PreCompact, Stop
-- 18 команд: `/om-standup`, `/om-dump`, `/om-wrap-up`, `/om-weekly`
-- 9 подагентов: brag-spotter, vault-librarian, cross-linker
-- Мульти-агентная совместимость (Claude Code, Codex CLI, Gemini CLI)
+- 18 commands: `/om-standup`, `/om-dump`, `/om-wrap-up`, `/om-weekly`
+- 9 sub-agents: brag-spotter, vault-librarian, cross-linker
+- Multi-agent compatibility (Claude Code, Codex CLI, Gemini CLI)
 
 ### claude-code-memory-setup (`lucasrosati/claude-code-memory-setup`)
 
-Фокус на экономии токенов. Заявляется снижение расхода в 71.5 раз.
+Focused on token savings. Claims a 71.5x reduction in spending.
 
-**Три слоя:**
-1. **Obsidian Zettelkasten** — атомарные заметки с wikilinks
-2. **Graphify** — AST-парсинг кодовой базы → `graph.json` (332 узла из 126 файлов = 172 КБ)
-3. **Chat Import Pipeline** — автоимпорт разговоров с Claude в vault
+**Three layers:**
+1. **Obsidian Zettelkasten** — atomic notes with wikilinks
+2. **Graphify** — AST parsing of the codebase → `graph.json` (332 nodes from 126 files = 172 KB)
+3. **Chat Import Pipeline** — auto-import of Claude conversations into the vault
 
 ```bash
 pip install graphifyy && graphify install
@@ -249,54 +249,54 @@ graphify . --obsidian --obsidian-dir ~/vault/graphify/project-name
 
 ---
 
-## Метод 5: Obsidian-плагины с Claude Code
+## Method 5: Obsidian Plugins with Claude Code
 
 ### Claudian (`YishenTu/claudian`)
 
-Obsidian-плагин, встраивающий Claude Code прямо в sidebar. Vault = рабочая директория агента.
+An Obsidian plugin that embeds Claude Code directly into the sidebar. The vault = the agent's working directory.
 
 ### Agent Client
 
-Плагин для запуска Claude Code, Codex и Gemini CLI внутри Obsidian (требует Obsidian 1.12+).
+A plugin for running Claude Code, Codex, and Gemini CLI inside Obsidian (requires Obsidian 1.12+).
 
 ---
 
-## Сравнительная таблица
+## Comparison Table
 
-| Метод | Сложность | Время | Автоматизация | Лучше всего для |
-|-------|-----------|-------|---------------|-----------------|
-| Прямой доступ | Минимальная | 5 мин | Нет | Быстрый старт |
-| MCP-сервер | Низкая | 10-15 мин | Частичная | Поиск по vault из любого проекта |
-| Хуки + memory extractor | Высокая | 1-2 часа | Полная | Долгосрочная работа |
-| Obsidian Mind (шаблон) | Средняя | 30 мин | Полная | Комплексное решение "из коробки" |
-| Плагины в Obsidian | Низкая | 10 мин | Нет | Работа внутри Obsidian |
-
----
-
-## Рекомендация для AI Agency Platform
-
-### Поэтапный план
-
-**Фаза 1 — сейчас (5 минут):**
-- Создать vault (или использовать существующий)
-- Добавить `CLAUDE.md` с инструкциями
-- Запускать `claude` из директории vault когда нужна работа с памятью
-
-**Фаза 2 — при активной разработке (15 минут):**
-- Подключить `obsidian-mcp` как MCP-сервер
-- Claude Code получает доступ к vault из любой рабочей директории
-
-**Фаза 3 — при регулярной работе (1-2 часа):**
-- Настроить хуки для автоматического извлечения инсайтов
-- Или попробовать Obsidian Mind как готовый шаблон
-
-### Ключевое понимание
-
-Vault **не нужно** загружать целиком в контекст. Claude Code открывает только нужные файлы, а `CLAUDE.md` служит "картой" к знаниям. Это принципиально отличается от RAG — здесь агент сам решает, что прочитать.
+| Method | Complexity | Time | Automation | Best For |
+|--------|-----------|------|------------|----------|
+| Direct access | Minimal | 5 min | None | Quick start |
+| MCP server | Low | 10-15 min | Partial | Searching the vault from any project |
+| Hooks + memory extractor | High | 1-2 hours | Full | Long-term work |
+| Obsidian Mind (template) | Medium | 30 min | Full | Comprehensive "out of the box" solution |
+| Plugins in Obsidian | Low | 10 min | None | Working inside Obsidian |
 
 ---
 
-## Ссылки
+## Recommendation for AI Agency Platform
+
+### Step-by-Step Plan
+
+**Phase 1 — now (5 minutes):**
+- Create a vault (or use an existing one)
+- Add `CLAUDE.md` with instructions
+- Launch `claude` from the vault directory when you need to work with memory
+
+**Phase 2 — during active development (15 minutes):**
+- Connect `obsidian-mcp` as an MCP server
+- Claude Code gains access to the vault from any working directory
+
+**Phase 3 — during regular work (1-2 hours):**
+- Set up hooks for automatic insight extraction
+- Or try Obsidian Mind as a ready-made template
+
+### Key Understanding
+
+The vault **does not need** to be loaded entirely into context. Claude Code opens only the needed files, and `CLAUDE.md` serves as a "map" to the knowledge. This is fundamentally different from RAG — here the agent decides what to read on its own.
+
+---
+
+## Links
 
 - [obsidian-mcp (StevenStavrakis)](https://github.com/StevenStavrakis/obsidian-mcp)
 - [mcp-obsidian (MarkusPfundstein)](https://github.com/MarkusPfundstein/mcp-obsidian)

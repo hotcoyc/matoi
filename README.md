@@ -1,8 +1,8 @@
 # Matoi
 
-CLI-платформа, где AI-агенты работают как полная стартап-команда: от валидации рынка до запуска продукта -- стратеги, ресерчеры, маркетологи, инженеры спорят по существу и выдают артефакты.
+A CLI platform where AI agents work as a complete startup team: from market validation to product launch -- strategists, researchers, marketers, engineers argue on substance and produce artifacts.
 
-*Matoi -- знамя японских пожарных, за которым собирается команда.*
+*Matoi -- a Japanese firefighter's standard, around which the team rallies.*
 
 ## Quick Start
 
@@ -13,9 +13,9 @@ pip install -e .
 matoi
 ```
 
-При первом запуске Matoi попросит API key от Anthropic, отсканирует проект, построит граф кода и предложит собрать команду.
+On first launch, Matoi will ask for an Anthropic API key, scan the project, build a code graph, and offer to assemble a team.
 
-## Как работает
+## How It Works
 
 ```
 $ matoi
@@ -32,37 +32,37 @@ $ matoi
   [ai-agency-platform/Startup] > _
 ```
 
-Вы вводите задачи -- команда агентов отвечает в реальном времени с markdown-рендерингом. Перед коммитом агенты ревьюят изменения и дебатируют если есть разногласия.
+You enter tasks -- the agent team responds in real time with markdown rendering. Before a commit, agents review changes and debate if there are disagreements.
 
 ## Pipeline
 
-Каждая задача проходит 6 стадий:
+Each task goes through 6 stages:
 
 ```
-1. Selective Activation  -- Haiku выбирает релевантных агентов
-2. PM Brief              -- PM формулирует задачу
-3. Expert Pass           -- каждый агент даёт мнение (streaming)
-4. Conflict Detection    -- Haiku ищет расхождения
-5. Debate                -- structured rounds если конфликты найдены
-6. Synthesis             -- PM принимает решение с учётом дебатов
+1. Selective Activation  -- Haiku selects relevant agents
+2. PM Brief              -- PM formulates the task
+3. Expert Pass           -- each agent provides their opinion (streaming)
+4. Conflict Detection    -- Haiku looks for disagreements
+5. Debate                -- structured rounds if conflicts are found
+6. Synthesis             -- PM makes the decision incorporating debate results
 ```
 
-Дебаты запускаются автоматически когда агенты не согласны друг с другом. Если конфликтов нет -- пропускаются.
+Debates are triggered automatically when agents disagree with each other. If there are no conflicts -- they are skipped.
 
-## 17 агентов
+## 17 Agents
 
-**PM [PM]** -- 4 стиля управления:
+**PM [PM]** -- 4 management styles:
 
-| Агент | Стиль |
+| Agent | Style |
 |-------|-------|
-| Startup PM | Скорость, ship fast, режь scope |
-| Delivery PM | Предсказуемость, milestones |
-| Enterprise PM | Документация, compliance |
-| Product Strategist PM | Ценность для пользователя |
+| Startup PM | Speed, ship fast, cut scope |
+| Delivery PM | Predictability, milestones |
+| Enterprise PM | Documentation, compliance |
+| Product Strategist PM | User value |
 
-**Executors [EXE]** -- реализация:
+**Executors [EXE]** -- implementation:
 
-| Агент | Принцип |
+| Agent | Principle |
 |-------|---------|
 | Backend Engineer | No production code without a failing test first |
 | Frontend Engineer | The user doesn't care about your architecture |
@@ -71,9 +71,9 @@ $ matoi
 | Content Strategist | Content without strategy is just noise |
 | DevOps Engineer | If it's not automated, it's broken |
 
-**Thinkers [THK]** -- исследования:
+**Thinkers [THK]** -- research:
 
-| Агент | Принцип |
+| Agent | Principle |
 |-------|---------|
 | Market Researcher | Data first, opinions second |
 | Competitive Analyst | Know your enemy. Build what they can't copy |
@@ -81,74 +81,74 @@ $ matoi
 | UX Researcher | Talk to users, not about users |
 | Financial Modeler | A spreadsheet is a hypothesis. Test it |
 
-**Critics [CRT]** -- проверка:
+**Critics [CRT]** -- review:
 
-| Агент | Принцип |
+| Agent | Principle |
 |-------|---------|
 | Security Reviewer | Trust nothing. Verify everything |
 | QA Strategist | No completion claims without verification evidence |
 
-Каждый агент -- файл `.md` с YAML frontmatter: роль, debate style, model policy, strengths, weaknesses, activation rules.
+Each agent is a `.md` file with YAML frontmatter: role, debate style, model policy, strengths, weaknesses, activation rules.
 
-## Команды сессии
+## Session Commands
 
 ```
-/help     -- все команды
-/team     -- текущая команда
-/agents   -- все 17 агентов
-/cost     -- стоимость сессии
-/history  -- задачи в этой сессии
+/help     -- all commands
+/team     -- current team
+/agents   -- all 17 agents
+/cost     -- session cost
+/history  -- tasks in this session
 /commit   -- review -> debate -> commit -> update graph
-/quit     -- выход (Ctrl+D)
+/quit     -- exit (Ctrl+D)
 ```
 
-Tab -- автокомплит команд и @агентов. Alt+Enter -- многострочный ввод.
+Tab -- autocomplete for commands and @agents. Alt+Enter -- multiline input.
 
-## CLI команды
+## CLI Commands
 
 ```bash
-matoi                          # интерактивная сессия
-matoi run "задача"             # one-shot pipeline
-matoi cost                     # стоимость по сессиям и моделям
+matoi                          # interactive session
+matoi run "task"               # one-shot pipeline
+matoi cost                     # cost breakdown by sessions and models
 
-matoi roster list              # таблица агентов
-matoi roster show startup-pm   # карточка с pixel-art аватаром
+matoi roster list              # agent table
+matoi roster show startup-pm   # card with pixel-art avatar
 
-matoi team create              # собрать команду
-matoi team show / list         # посмотреть команды
+matoi team create              # assemble a team
+matoi team show / list         # view teams
 
 matoi memory show              # MemPalace status
-matoi memory search "query"    # семантический поиск по памяти
+matoi memory search "query"    # semantic memory search
 
-matoi viz graph                # граф зависимостей в браузере
-matoi viz city                 # 3D-город кода (CodeCharta)
+matoi viz graph                # dependency graph in browser
+matoi viz city                 # 3D code city (CodeCharta)
 
-matoi task plan "задача" -t demo  # dry run
+matoi task plan "task" -t demo  # dry run
 ```
 
-## Cost routing
+## Cost Routing
 
-Разные модели для разных стадий -- не "дорого на всё":
+Different models for different stages -- not "expensive for everything":
 
-| Стадия | Модель | Цена (in/out per 1M) |
-|--------|--------|---------------------|
+| Stage | Model | Price (in/out per 1M) |
+|-------|-------|---------------------|
 | Activation, Brief, Conflict Detection | Haiku | $1 / $5 |
 | Expert Pass, Debate | Sonnet | $3 / $15 |
 | Synthesis | Opus | $15 / $75 |
 
-Типичная задача с 3 агентами без дебатов: $0.30-0.80.
+A typical task with 3 agents without debate: $0.30-0.80.
 
-## Интеграции
+## Integrations
 
-| Инструмент | Что делает |
-|-----------|-----------|
+| Tool | What It Does |
+|------|-------------|
 | **Anthropic API** | Streaming LLM calls, cost routing |
-| **MemPalace** | Память: семантический поиск, knowledge graph, auto-save |
-| **code-review-graph** | AI-навигация по коду: 28 MCP tools, auto-update |
-| **CodeCharta** | 3D-визуализация архитектуры кода |
+| **MemPalace** | Memory: semantic search, knowledge graph, auto-save |
+| **code-review-graph** | AI code navigation: 28 MCP tools, auto-update |
+| **CodeCharta** | 3D code architecture visualization |
 | **prompt_toolkit** | TUI: autocomplete, history, status bar |
 
-## Структура проекта
+## Project Structure
 
 ```
 src/matoi/
@@ -163,8 +163,8 @@ agents/          -- 17 agent .md files (YAML frontmatter)
 assets/avatars/  -- pixel-art PNG + Braille .txt
 ```
 
-## Требования
+## Requirements
 
 - Python 3.11+
 - Anthropic API key
-- Опционально: code-review-graph, CodeCharta (Java 17+), chafa
+- Optional: code-review-graph, CodeCharta (Java 17+), chafa
