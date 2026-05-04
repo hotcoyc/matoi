@@ -48,7 +48,7 @@ COMMANDS = [
 
 
 class MatoiCompleter(Completer):
-    """Autocomplete for / commands and @ agent mentions."""
+    """Autocomplete for / commands and @ agent mentions. Fuzzy matching."""
 
     def __init__(self, agent_slugs: list[str] | None = None) -> None:
         self.agent_slugs = agent_slugs or []
@@ -57,21 +57,23 @@ class MatoiCompleter(Completer):
         text = document.text_before_cursor
         word = document.get_word_before_cursor(WORD=True)
 
-        # Command completion
+        # Command completion (fuzzy)
         if text.startswith("/"):
+            query = word.lower().lstrip("/")
             for cmd in COMMANDS:
-                if cmd.startswith(word.lower()):
+                cmd_name = cmd.lstrip("/")
+                if not query or query in cmd_name:
                     yield Completion(cmd, start_position=-len(word), display_meta="command")
 
-        # Agent mention completion
+        # Agent mention completion (fuzzy)
         elif "@" in text:
             at_pos = text.rfind("@")
-            partial = text[at_pos + 1:]
+            partial = text[at_pos + 1:].lower()
             for slug in self.agent_slugs:
-                if partial.lower() in slug.lower():
+                if not partial or partial in slug.lower():
                     yield Completion(
                         slug,
-                        start_position=-len(partial),
+                        start_position=-len(text[at_pos + 1:]),
                         display_meta="agent",
                     )
 
@@ -115,9 +117,11 @@ class MatoiPrompt:
         )
 
         self._first_prompt = True
+        self._working = False
 
     def ask(self) -> str | None:
         """Show prompt and get user input. Returns None on Ctrl+D/exit."""
+        self._working = False
         prompt_text = self._build_prompt()
 
         try:
@@ -128,6 +132,10 @@ class MatoiPrompt:
             return ""  # Ctrl+C = cancel current input
         except EOFError:
             return None  # Ctrl+D = quit
+
+    def set_working(self, working: bool = True) -> None:
+        """Set working state (changes prompt color)."""
+        self._working = working
 
     def ask_initial(self, question: str) -> str:
         """Ask a one-time question (like goal description)."""
@@ -177,9 +185,11 @@ class MatoiPrompt:
             parts.append(f"<prompt.pm>{short_pm}</prompt.pm>")
 
         prefix = "/".join(parts)
+        # Green when ready, yellow when working
+        arrow_color = "#d7af5f" if self._working else "#87d787"
         if prefix:
-            return HTML(f"<prompt>[{prefix}]</prompt> <b>&gt;</b> ")
-        return HTML("<b>&gt;</b> ")
+            return HTML(f"<prompt>[{prefix}]</prompt> <style fg='{arrow_color}' bold='true'>&gt;</style> ")
+        return HTML(f"<style fg='{arrow_color}' bold='true'>&gt;</style> ")
 
     def _toolbar(self) -> HTML:
         parts = []

@@ -269,7 +269,9 @@ class Session:
                 continue
 
             # ── Run task ──
+            self.prompt.set_working(True)
             self._run_task(user_input)
+            self.prompt.set_working(False)
 
             # Update status bar
             if self.prompt:
