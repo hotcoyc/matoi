@@ -226,7 +226,7 @@ class MatoiApp(App):
         self.cost_tracker = None
         self.memory = None
         self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self._ready = False
+        self._session_ready = False
         self._current_tab = "chat"
 
     def compose(self) -> ComposeResult:
@@ -319,7 +319,7 @@ class MatoiApp(App):
             self._add_system("No PM. Run 'matoi --classic' to set up first.")
 
         self._add_system("Ready. Type your task. /help for commands.")
-        self._ready = True
+        self._session_ready = True
 
     def _populate_sidebar(self) -> None:
         """Fill sidebar with PM and agents."""
@@ -348,7 +348,7 @@ class MatoiApp(App):
             return
 
         self._add_user(text)
-        if self._ready and self.pm and self.provider:
+        if self._session_ready and self.pm and self.provider:
             self._run_task(text)
 
     def _handle_command(self, text: str) -> None:
