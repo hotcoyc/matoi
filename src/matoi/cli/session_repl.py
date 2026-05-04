@@ -99,7 +99,7 @@ class Session:
         if project_config and project_config.pm:
             self.pm = self.registry.get(project_config.pm)
             if self.pm:
-                console.print(f"  PM: [bold]{self.pm.name}[/bold] -- \"{self.pm.motto}\"")
+                self._show_pm_avatar()
             else:
                 self._pick_pm()
         else:
@@ -195,7 +195,30 @@ class Session:
             choices=[str(i + 1) for i in range(len(coordinators))],
         )
         self.pm = coordinators[int(choice) - 1]
-        console.print(f"\n  PM: [bold]{self.pm.name}[/bold]")
+        self._show_pm_avatar()
+
+    def _show_pm_avatar(self) -> None:
+        """Show selected PM with small avatar."""
+        if not self.pm:
+            return
+        from matoi.cli.team import PM_COLORS
+        color = PM_COLORS.get(self.pm.slug, "white")
+        avatar = load_avatar(self.pm.slug, width_chars=12)
+
+        lines = []
+        if avatar:
+            lines.append(avatar.strip())
+            lines.append("")
+        lines.append(f"[bold]{self.pm.name}[/bold]")
+        lines.append(f'[italic]"{self.pm.motto}"[/italic]')
+
+        console.print()
+        console.print(Panel(
+            "\n".join(lines),
+            border_style=color,
+            width=30,
+            padding=(0, 1),
+        ))
 
     def _manual_team_selection(self) -> None:
         """Let user pick agents manually."""
@@ -610,7 +633,7 @@ class Session:
         if not self.pm:
             console.print("  [dim]No PM selected.[/dim]")
             return
-        console.print(f"\n  PM: [bold]{self.pm.name}[/bold]")
+        self._show_pm_avatar()
         if self.agents:
             names = ", ".join(a.name for a in self.agents)
             console.print(f"  Team: {names}")
