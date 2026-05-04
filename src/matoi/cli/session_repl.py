@@ -270,8 +270,13 @@ class Session:
 
             # ── Run task ──
             self.prompt.set_working(True)
-            self._run_task(user_input)
-            self.prompt.set_working(False)
+            try:
+                self._run_task(user_input)
+            except Exception as e:
+                error_name = type(e).__name__
+                console.print(f"\n  [red]{error_name}: {e}[/red]\n")
+            finally:
+                self.prompt.set_working(False)
 
             # Update status bar
             if self.prompt:

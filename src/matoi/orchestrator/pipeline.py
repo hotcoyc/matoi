@@ -321,22 +321,30 @@ def _stream_call(
     from rich.markdown import Markdown
 
     from matoi.core.cost import CostRecord
+    from matoi.gateway.provider import APIError
 
     console.print(f"  [bold]{label}[/bold]")
 
     full_text = ""
     cost = None
 
-    with Live(Markdown(""), console=console, refresh_per_second=4) as live:
-        for chunk in provider.stream(model_id, system, user_msg):
-            if isinstance(chunk, CostRecord):
-                cost = chunk
-            else:
-                full_text += chunk
-                try:
-                    live.update(Markdown(full_text))
-                except Exception:
-                    live.update(full_text)
+    try:
+        with Live(Markdown(""), console=console, refresh_per_second=4) as live:
+            for chunk in provider.stream(model_id, system, user_msg):
+                if isinstance(chunk, CostRecord):
+                    cost = chunk
+                else:
+                    full_text += chunk
+                    try:
+                        live.update(Markdown(full_text))
+                    except Exception:
+                        live.update(full_text)
+    except APIError as e:
+        console.print(f"\n  [red]API error: {e}[/red]")
+        if not e.retryable:
+            console.print("  [dim]This error is not retryable.[/dim]")
+    except Exception as e:
+        console.print(f"\n  [red]Error: {e}[/red]")
 
     console.print()
 
