@@ -304,52 +304,88 @@ matoi                # запуск → онбординг
 
 ---
 
+### Фаза 15: MVP polish (4 мая 2026)
+
+- **Selective agent activation** -- Haiku анализирует задачу, выбирает релевантных агентов, пропускает нерелевантных
+- **3 новых агента** (всего 17): Content Strategist, DevOps Engineer, Financial Modeler
+- **matoi team list** -- просмотр всех сохранённых команд
+- Убран дубль `matoi task run` (оставлен `matoi run` + `matoi task plan`)
+
+---
+
+### Фаза 16: Interactive REPL (4 мая 2026)
+
+**Matoi стал интерактивным.** Вместо one-shot `matoi run "task"` -- полноценная сессия:
+
+1. `matoi` открывает REPL с промптом
+2. Выбор PM, описание цели
+3. PM рекомендует команду на сессию
+4. Пользователь вводит задачи, агенты отвечают (streaming + markdown)
+5. `/commit` -- agents review diff, debate if conflicts, commit, update graph
+
+Команды сессии: /help, /team, /agents, /cost, /history, /commit, /quit
+
+---
+
+### Фаза 17: Phase B TUI (4 мая 2026)
+
+Полноценный TUI через prompt_toolkit:
+
+- Цветной промпт `[project/PM] >` (зелёный = ready, жёлтый = working)
+- Bottom status bar: PM, team size, tokens, cost
+- Tab-автокомплит команд (fuzzy: `/co` -> `/commit`, `/cost`)
+- Tab-автокомплит @агентов (fuzzy)
+- Persistent history (`~/.matoi/history`, стрелки, Ctrl+R)
+- Alt+Enter для мультилайн
+- Live markdown rendering (Rich Live + Markdown, code highlighting)
+- Keybindings: Ctrl+C cancel, Ctrl+D quit, Ctrl+L clear
+
+---
+
 ### Текущее состояние (4 мая 2026)
 
-**Статус:** полноценный MVP с 5-стадийным pipeline, дебатами, памятью и визуализацией.
+**Статус:** полноценный MVP с интерактивной сессией, 6-стадийным pipeline, дебатами, памятью, визуализацией и TUI.
 
 **Что работает:**
-- `matoi` -- онбординг в любом проекте (API key, scan, graph, team)
-- `matoi run "task"` -- 5-стадийный pipeline со streaming
-- `matoi cost` -- агрегация стоимости по сессиям и моделям
-- `matoi roster list/show` -- 14 агентов с pixel-art аватарами
-- `matoi team create/show` -- интерактивная сборка команды
-- `matoi memory show/search/mine` -- MemPalace (433 drawers)
+- `matoi` -- интерактивная REPL-сессия с TUI (prompt_toolkit)
+- `matoi run "task"` -- one-shot pipeline
+- `matoi cost` -- стоимость по сессиям и моделям
+- `matoi roster list/show` -- 17 агентов с pixel-art аватарами
+- `matoi team create/show/list` -- команды
+- `matoi memory show/search/mine/wake-up` -- MemPalace
 - `matoi viz graph/city/build/status` -- визуализации
-- `matoi task plan` -- dry run с маршрутизацией моделей
-- Conflict detection (автоматический, Haiku)
-- Structured debate (claim/critique/concession/recommendation)
-- Cost-intelligent routing: Haiku/Sonnet/Opus
-- Real cost tracking ($1/$5, $3/$15, $15/$75 per 1M tokens)
-- Streaming вывод (token-by-token)
+- 6-стадийный pipeline: activation, brief, expert, conflict, debate, synthesis
+- Streaming + live markdown rendering
+- Selective agent activation
+- Pre-commit debate (/commit)
+- Real cost tracking ($1/$5, $3/$15, $15/$75)
+- MemPalace auto-save hooks
+- code-review-graph MCP (28 tools)
 - 8 тестов, все проходят
 
 **Что предстоит:**
-- Больше агентов (Content Strategist, DevOps, Financial Modeler)
+- Error handling (network errors, rate limits)
 - GitHub repo + PyPI + Homebrew
-- MemPalace auto-save hooks
-- Selective agent activation (PM рекомендует кого включить)
+- Больше тестов (pipeline, conflict, debate)
+- `matoi history` -- browse past sessions
+- Agent marketplace
 
-**Git-история (19 коммитов):**
+**Git-история (28 коммитов):**
 ```
+bf8f84e Complete Phase B: fuzzy autocomplete, prompt color states
+973f508 Add live markdown rendering for agent responses
+7c25cae Fix mempalace hook: use absolute path
+7345f44 Phase B: TUI with prompt_toolkit
+1879abd Replace one-shot pipeline with interactive REPL session
+3a8147c Update project description
+b198edf MVP polish: selective activation, 3 new agents, team list, cleanup
+bee115c Update docs: debate engine, streaming, MemPalace, cost tracking
 a8c47da Implement conflict detection + structured debate engine
 d9319eb Add streaming output to pipeline
 b82d8bc Implement matoi cost
 fd96a71 Add real cost tracking with per-token pricing
 9b7c575 Remove all emoji icons from CLI output
-6c02f5b Add matoi viz commands for project visualization
-c29ecfa Add CodeCharta 3D city generation to onboarding
-c3e3917 Integrate code-review-graph for AI code navigation
-c096e2c Replace custom memory with MemPalace backend
-fe6edee Integrate MemPalace as memory backend
-69a1996 Update project history
-9e01dad Redesign UX: matoi works in any project directory
-a88ec08 Implement knowledge graph memory system
-35aada9 Implement MVP pipeline: matoi run with Anthropic API
-5c8a382 Update project history and description for Matoi
-63b7853 Add 14 custom pixel-art avatars, auto-resize PNG to Braille
-25019d9 Add API key check for matoi run, implement matoi team show
-ead0ba9 Add 10 agents: executors, thinkers, critics with Superpowers-inspired behaviors
+...
 8105fd3 Rename project to Matoi (纏), implement CLI roster and team create
 755a4fd Initial scaffolding: project structure, domain models, CLI, agent registry
 ```
