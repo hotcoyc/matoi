@@ -32,19 +32,15 @@ app.add_typer(viz_app, name="viz", help="Project visualizations (graph, 3D city)
 
 @app.callback(invoke_without_command=True)
 def main(ctx: typer.Context) -> None:
-    """纏 Matoi — your full startup team in the terminal."""
+    """Matoi -- your full startup team in the terminal."""
     if ctx.invoked_subcommand is not None:
         return
 
-    # No subcommand → interactive onboarding or status
-    from matoi.core.config import load_project_config
+    # No subcommand → interactive REPL session
+    from matoi.cli.session_repl import Session
 
-    project_config = load_project_config()
-
-    if project_config is None:
-        _onboarding()
-    else:
-        _status(project_config)
+    session = Session()
+    session.start()
 
 
 def _onboarding() -> None:
