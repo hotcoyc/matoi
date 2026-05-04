@@ -135,6 +135,74 @@ def remove_agent(
     console.print(f"  ✓ Removed [bold]{agent}[/bold] from team [bold]{team}[/bold]")
 
 
+@team_app.command("list")
+def list_teams() -> None:
+    """List all saved teams."""
+    from matoi.core.config import get_project_dir
+
+    # Check project dir first, then package teams
+    teams_dirs = []
+    project_dir = get_project_dir()
+    if (project_dir / "config.json").exists():
+        teams_dirs.append(project_dir.parent)  # project root may have teams/
+
+    teams_dirs.append(get_project_root() / "teams")
+
+    found: list[TeamConfig] = []
+    seen: set[str] = set()
+
+    # Project team (from matoi/config.json)
+    from matoi.core.config import load_project_config
+    pc = load_project_config()
+    if pc and pc.team_name:
+        found.append(TeamConfig(name=pc.team_name, pm=pc.pm, agents=pc.agents))
+        seen.add(pc.team_name)
+
+    # Saved teams from teams/ dirs
+    for teams_dir in teams_dirs:
+        if not teams_dir.exists():
+            continue
+        for f in sorted(teams_dir.glob("**/*.json")):
+            try:
+                tc = TeamConfig.model_validate_json(f.read_text())
+                if tc.name not in seen:
+                    found.append(tc)
+                    seen.add(tc.name)
+            except Exception:
+                continue
+
+    if not found:
+        console.print("[dim]No teams found. Run 'matoi team create' or 'matoi' to create one.[/dim]")
+        raise typer.Exit()
+
+    registry = get_registry()
+
+    table = Table(title="Teams", border_style="dim", show_lines=True)
+    table.add_column("Name", style="bold", min_width=15)
+    table.add_column("PM", min_width=20)
+    table.add_column("Agents", min_width=30)
+    table.add_column("Size", justify="right", width=5)
+
+    for tc in found:
+        pm = registry.get(tc.pm)
+        pm_name = pm.name if pm else tc.pm
+        agent_names = []
+        for slug in tc.agents:
+            a = registry.get(slug)
+            agent_names.append(a.name if a else slug)
+
+        table.add_row(
+            tc.name,
+            pm_name,
+            ", ".join(agent_names) if agent_names else "[dim]none[/dim]",
+            str(tc.agent_count()),
+        )
+
+    console.print()
+    console.print(table)
+    console.print()
+
+
 @team_app.command("show")
 def show_team(name: str = typer.Argument(help="Team name.")) -> None:
     """Show team composition with avatars and agent details."""

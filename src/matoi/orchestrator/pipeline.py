@@ -60,13 +60,28 @@ class MVPPipeline:
             console.print(f"[red]PM '{self.team.pm}' not found in registry.[/red]")
             raise SystemExit(1)
 
-        agents = []
+        all_agents = []
         for slug in self.team.agents:
             agent = self.registry.get(slug)
             if agent:
-                agents.append(agent)
+                all_agents.append(agent)
             else:
                 console.print(f"[yellow]Agent '{slug}' not found, skipping.[/yellow]")
+
+        # ── Selective activation ──
+        if len(all_agents) > 2:
+            from matoi.agents.activation import ActivationEngine
+            activator = ActivationEngine(self.provider)
+            agents = activator.select_active(all_agents, task_description)
+            if len(agents) < len(all_agents):
+                active_names = ", ".join(a.name for a in agents)
+                skipped = [a.name for a in all_agents if a not in agents]
+                console.print(f"  [dim]Active: {active_names}[/dim]")
+                console.print(f"  [dim]Skipped: {', '.join(skipped)}[/dim]")
+            else:
+                console.print(f"  [dim]All {len(agents)} agents active[/dim]")
+        else:
+            agents = all_agents
 
         # ── Load memory context ──
         memory_context = ""
