@@ -19,24 +19,27 @@ CLI-платформа, где AI-агенты работают как полн�
 ## Как это работает
 
 ```bash
-# Создать команду
-matoi team create my-startup
+# Инициализация в любом проекте
+cd ~/my-project
+matoi                # API key -> scan -> code graph -> team assembly
 
 # Запустить задачу
-matoi run "Validate market for AI-powered pet care" --team my-startup
+matoi run "Validate market for AI-powered pet care"
 ```
 
-**7-этапный pipeline:**
-1. **PM Brief** — PM формулирует цель, ограничения, deliverables (Haiku)
-2. **Expert Pass** — каждый агент независимо даёт экспертное мнение (Sonnet/Opus, streaming)
-3. **Conflict Detection** — Haiku сканирует мнения, находит расхождения (severity >= 0.5)
-4. **Debate** — если конфликты найдены: structured rounds (claim/critique/concession/recommendation). Если нет — пропускается
-5. **Synthesis** — PM синтезирует решение с учётом дебатов (Opus, streaming)
-6. **Artifacts** — brief.md, opinion_*.md, debate.md, decision.md, cost.json
+**6-стадийный pipeline:**
+1. **Selective Activation** -- Haiku анализирует задачу и выбирает релевантных агентов из команды. Нерелевантные пропускаются (экономия токенов)
+2. **PM Brief** -- PM формулирует цель, ограничения, deliverables (Haiku)
+3. **Expert Pass** -- каждый активный агент независимо даёт мнение (Sonnet/Opus, streaming)
+4. **Conflict Detection** -- Haiku сканирует мнения, находит расхождения (severity >= 0.5)
+5. **Debate** -- если конфликты найдены: structured rounds (claim/critique/concession/recommendation). Если нет -- пропускается
+6. **Synthesis** -- PM синтезирует решение с учётом дебатов (Opus, streaming)
 
-## 14 агентов в 6 категориях
+Артефакты: brief.md, opinion_*.md, debate.md, decision.md, cost.json
 
-### Coordinators [PM] — PM-агенты с разными стилями
+## 17 агентов в 6 категориях
+
+### Coordinators [PM] -- PM-агенты с разными стилями
 | Агент | Стиль | Risk Tolerance |
 |-------|-------|---------------|
 | **Startup PM** | Скорость, ship fast, режь scope | Высокий (0.8) |
@@ -44,23 +47,26 @@ matoi run "Validate market for AI-powered pet care" --team my-startup
 | **Enterprise PM** | Документация, compliance, аудит | Минимальный (0.1) |
 | **Product Strategist PM** | Ценность для пользователя, research first | Средний (0.5) |
 
-### Executors [EXE] — реализация
+### Executors [EXE] -- реализация
 | Агент | Iron Law |
 |-------|---------|
 | **Backend Engineer** | No production code without a failing test first |
 | **Frontend Engineer** | The user doesn't care about your architecture |
 | **Product Designer** | Design it before you build it |
 | **Growth Marketer** | Every channel is a hypothesis until the data says otherwise |
+| **Content Strategist** | Content without strategy is just noise |
+| **DevOps Engineer** | If it's not automated, it's broken |
 
-### Thinkers [THK] — исследования и стратегия
+### Thinkers [THK] -- исследования и стратегия
 | Агент | Iron Law |
 |-------|---------|
 | **Market Researcher** | Data first, opinions second. No claims without sources |
 | **Competitive Analyst** | Know your enemy. Then build what they can't copy |
 | **Business Analyst** | If you can't model it, you don't understand it |
 | **UX Researcher** | Talk to users, not about users |
+| **Financial Modeler** | A spreadsheet is a hypothesis. Test it |
 
-### Critics [CRT] — проверка и качество
+### Critics [CRT] -- проверка и качество
 | Агент | Iron Law |
 |-------|---------|
 | **Security Reviewer** | Trust nothing. Verify everything |
@@ -69,20 +75,32 @@ matoi run "Validate market for AI-powered pet care" --team my-startup
 ## CLI-команды
 
 ```bash
-matoi roster list                    # Таблица всех 14 агентов
-matoi roster list --category research  # Фильтр по категории
-matoi roster show startup-pm         # Карточка агента с pixel-art аватаром
+matoi                                   # Онбординг: API key, scan, graph, team
+matoi run "задача"                      # 6-стадийный pipeline со streaming
+matoi run "задача" --budget 1.0         # С лимитом бюджета
+matoi cost                              # Стоимость по сессиям и моделям
 
-matoi team create my-startup         # Интерактивный выбор PM + агентов
-matoi team show my-startup           # Вывод команды с аватаром PM
-matoi team add my-startup backend-engineer  # Добавить агента
-matoi team remove my-startup qa-strategist  # Убрать агента
+matoi roster list                       # Таблица всех 17 агентов
+matoi roster list --category research   # Фильтр по категории
+matoi roster show startup-pm            # Карточка с pixel-art аватаром
 
-matoi task run "задача" --team my-startup  # Запуск pipeline
-matoi task plan "задача" --team my-startup # Dry run
+matoi team create my-startup            # Интерактивный выбор PM + агентов
+matoi team show my-startup              # Вывод команды с аватаром PM
+matoi team list                         # Все сохранённые команды
+matoi team add my-startup backend-engineer   # Добавить агента
+matoi team remove my-startup qa-strategist   # Убрать агента
 
-matoi cost                           # Стоимость сессий
-matoi init                           # Инициализация проекта
+matoi memory show                       # MemPalace: drawers, wings, rooms
+matoi memory search "query"             # Семантический поиск
+matoi memory mine .                     # Индексация файлов
+matoi memory wake-up                    # Контекст для начала сессии
+
+matoi viz graph                         # Граф зависимостей в браузере
+matoi viz city                          # 3D-город кода (CodeCharta)
+matoi viz build                         # Пересборка визуализаций
+matoi viz status                        # Статус визуализаций
+
+matoi task plan "задача" --team demo    # Dry run с маршрутизацией моделей
 ```
 
 ## Технический стек
@@ -104,13 +122,14 @@ matoi init                           # Инициализация проекта
 
 ## Cost-intelligent routing
 
-| Стадия | Модель | Зачем |
-|--------|--------|-------|
-| Brief | Haiku ($1/$5) | Простая структуризация задачи |
-| Expert Pass | Sonnet ($3/$15) | Основная экспертная работа |
-| Conflict Detection | Haiku ($1/$5) | Дешёвое сканирование расхождений |
-| Debate | Sonnet ($3/$15) | Structured rounds по конфликтам |
-| Synthesis | Opus ($15/$75) | Критическое итоговое решение |
+| Стадия | Модель | Цена (in/out per 1M) | Зачем |
+|--------|--------|---------------------|-------|
+| Selective Activation | Haiku | $1 / $5 | Выбор релевантных агентов |
+| Brief | Haiku | $1 / $5 | Структуризация задачи |
+| Expert Pass | Sonnet | $3 / $15 | Основная экспертная работа |
+| Conflict Detection | Haiku | $1 / $5 | Сканирование расхождений |
+| Debate | Sonnet | $3 / $15 | Structured rounds по конфликтам |
+| Synthesis | Opus | $15 / $75 | Критическое итоговое решение |
 
 ## Архитектура (6 слоёв)
 
