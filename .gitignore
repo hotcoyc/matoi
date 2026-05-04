@@ -24,6 +24,6 @@ entities.json
 # Generated files
 *.cc.json.gz
 .DS_Store
-matoi/
+/matoi/
 memory/
 scripts/gen_avatars.py
