@@ -18,3 +18,12 @@ artifacts/
 # MemPalace per-project files (issue #185)
 mempalace.yaml
 entities.json
+# Added by code-review-graph
+.code-review-graph/
+
+# Generated files
+*.cc.json.gz
+.DS_Store
+matoi/
+memory/
+scripts/gen_avatars.py
