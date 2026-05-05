@@ -381,9 +381,27 @@ Built fullscreen TUI with Textual (sidebar, tabs, color coding, progress indicat
 
 ---
 
-### Current State (end of May 4, 2026)
+### Phase 22: Execution Mode, Standup, Interactive UX (May 2026)
 
-**Status:** published MVP. 40+ commits, 33 tests, 17 agents. Available on PyPI and GitHub.
+**Execution Mode** (`/execute`): a second pipeline mode alongside Advisory. PM decomposes a task into subtasks and dispatches them to agents via `dispatch.py`. Each subtask gets a DONE or BLOCKED status. The PM tracks progress and reports results.
+
+**Standup notes**: auto-generated on session exit. Summarize decisions made, work completed, and blockers encountered during the session.
+
+**PM names**: all 4 PMs received character names -- Oliver (Startup), Aurora (Delivery), Marcus (Enterprise), Stella (Product Strategist). Names appear in prompts, menus, and standup notes.
+
+**Interactive UX overhaul**:
+- **Questionary** replaced raw input for PM selection (arrow-key navigation with descriptions) and team assembly (checkbox multi-select)
+- **alive-progress** added animated spinners during pipeline stages (brief, expert pass, conflict detection, synthesis)
+
+**New session commands**: `/execute`, `/standup`, `/key`
+
+45+ commits, 33 tests, 17 agents (4 PMs, 6 executors, 5 thinkers, 2 critics). Version 0.2.0+.
+
+---
+
+### Current State (May 2026)
+
+**Status:** published MVP, v0.2.0+. 45+ commits, 33 tests, 17 agents (4 PMs with names: Oliver/Aurora/Marcus/Stella, 6 executors, 5 thinkers, 2 critics). Available on PyPI and GitHub.
 
 **Install:**
 ```bash
@@ -397,11 +415,14 @@ matoi
 - `matoi history` -- view sessions and artifacts
 - `matoi cost` -- cost breakdown by sessions and models
 - `matoi roster list/show` -- 17 agents with pixel-art avatars
-- `matoi team create/show/list` -- teams
+- `matoi team create/show/list` -- teams (Questionary arrow-key/checkbox menus)
 - `matoi memory show/search/mine/wake-up` -- MemPalace
 - `matoi viz graph/city/build/status` -- visualizations
-- 6-stage pipeline: activation, brief, expert, conflict, debate, synthesis
+- Two pipeline modes: Advisory (brief->expert->conflict->debate->synthesis) and Execution (/execute: PM decomposes->agents execute subtasks with DONE/BLOCKED)
+- Session commands: /help, /team, /agents, /cost, /history, /standup, /execute, /commit, /key, /quit
+- Standup notes auto-generated on session exit
 - Streaming + live markdown rendering
+- alive-progress spinners during pipeline stages
 - Selective agent activation
 - Pre-commit debate (/commit)
 - Real cost tracking ($1/$5, $3/$15, $15/$75)
@@ -449,7 +470,7 @@ matoi
  and cost-intelligent routing"
        │
        ▼
-"纏 Matoi — CLI platform with 14 agents,      ← renaming + implementation
+"纏 Matoi — CLI platform with 17 agents,      ← renaming + implementation
  pixel-art characters and a working CLI"
        │
        ▼
@@ -471,15 +492,15 @@ matoi/
 │   ├── agents/             # Registry, runtime, activation
 │   ├── storage/            # Artifacts, sessions, costs
 │   └── gateway/            # Anthropic SDK, model router
-├── agents/                 # 14 agents in .md (YAML frontmatter)
-│   ├── coordinators/       # 4 PM agents
-│   ├── executors/          # Backend, Frontend, Designer, Marketer
-│   ├── thinkers/           # Researcher, Analyst, UX
-│   └── critics/            # Security, QA
+├── agents/                 # 17 agents in .md (YAML frontmatter)
+│   ├── coordinators/       # 4 PMs (Oliver, Aurora, Marcus, Stella)
+│   ├── executors/          # 6: Backend, Frontend, Designer, Marketer, Content, DevOps
+│   ├── thinkers/           # 5: Researcher, Competitive, Business, UX, Financial
+│   └── critics/            # 2: Security, QA
 ├── teams/                  # Team presets (.yaml) and saved teams (.json)
-├── assets/avatars/         # 14 pixel-art PNG + Braille .txt
+├── assets/avatars/         # 17 pixel-art PNG + Braille .txt
 ├── artifacts/              # Pipeline output artifacts
-├── tests/                  # pytest (8 tests)
+├── tests/                  # pytest (33 tests)
 ├── scripts/                # Avatar generators
 └── docs/                   # Project documentation
 ```

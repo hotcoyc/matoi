@@ -7,9 +7,11 @@ A CLI platform where AI agents work as a complete startup team: from market vali
 ## Quick Start
 
 ```bash
-git clone <repo-url>
-cd matoi
-pip install -e .
+pipx install matoi          # from PyPI
+# or
+git clone https://github.com/hotcoyc/matoi
+cd matoi && pip install -e .
+
 matoi
 ```
 
@@ -23,42 +25,63 @@ $ matoi
   Matoi -- your startup team in the terminal.
 
   API key: ok
-  PM: Startup PM -- "Ship it by Friday."
+  ? Choose PM: (use arrow keys)
+    > Oliver  -- Startup PM, "Ship it by Friday."
+      Aurora  -- Delivery PM, predictability and milestones
+      Marcus  -- Enterprise PM, documentation and compliance
+      Stella  -- Product Strategist PM, user value first
 
   What are you working on today? > Design MVP for pet care app
 
   Team: Backend Engineer, Product Designer, Market Researcher
 
-  [ai-agency-platform/Startup] > _
+  [ai-agency-platform/Oliver] > _
 ```
 
 You enter tasks -- the agent team responds in real time with markdown rendering. Before a commit, agents review changes and debate if there are disagreements.
 
-## Pipeline
+## Two Pipeline Modes
 
-Each task goes through 6 stages:
+### Advisory Mode (default)
+
+Each task goes through 5 stages:
 
 ```
-1. Selective Activation  -- Haiku selects relevant agents
-2. PM Brief              -- PM formulates the task
-3. Expert Pass           -- each agent provides their opinion (streaming)
-4. Conflict Detection    -- Haiku looks for disagreements
-5. Debate                -- structured rounds if conflicts are found
-6. Synthesis             -- PM makes the decision incorporating debate results
+1. PM Brief              -- PM formulates the task
+2. Expert Pass           -- each agent provides their opinion (streaming)
+3. Conflict Detection    -- Haiku looks for disagreements
+4. Debate                -- structured rounds if conflicts are found
+5. Synthesis             -- PM makes the decision incorporating debate results
 ```
 
 Debates are triggered automatically when agents disagree with each other. If there are no conflicts -- they are skipped.
+
+### Execution Mode (/execute)
+
+PM decomposes the task into subtasks and dispatches them to agents:
+
+```
+/execute Build authentication module
+
+PM decomposes -> 4 subtasks:
+  [DONE]    Backend Engineer: design auth schema
+  [DONE]    Security Reviewer: threat model
+  [BLOCKED] Frontend Engineer: login UI (waiting on schema)
+  [DONE]    QA Strategist: test plan
+```
+
+Each subtask gets a status: DONE or BLOCKED. The PM tracks progress and reports results.
 
 ## 17 Agents
 
 **PM [PM]** -- 4 management styles:
 
-| Agent | Style |
-|-------|-------|
-| Startup PM | Speed, ship fast, cut scope |
-| Delivery PM | Predictability, milestones |
-| Enterprise PM | Documentation, compliance |
-| Product Strategist PM | User value |
+| Agent | Name | Style |
+|-------|------|-------|
+| Startup PM | Oliver | Speed, ship fast, cut scope |
+| Delivery PM | Aurora | Predictability, milestones |
+| Enterprise PM | Marcus | Documentation, compliance |
+| Product Strategist PM | Stella | User value |
 
 **Executors [EXE]** -- implementation:
 
@@ -98,11 +121,16 @@ Each agent is a `.md` file with YAML frontmatter: role, debate style, model poli
 /agents   -- all 17 agents
 /cost     -- session cost
 /history  -- tasks in this session
+/standup  -- auto-generated standup notes for the session
+/execute  -- PM decomposes task into subtasks, agents execute with DONE/BLOCKED
 /commit   -- review -> debate -> commit -> update graph
+/key      -- change API key mid-session
 /quit     -- exit (Ctrl+D)
 ```
 
 Tab -- autocomplete for commands and @agents. Alt+Enter -- multiline input.
+
+On session exit, standup notes are auto-generated summarizing what was done, decisions made, and blockers.
 
 ## CLI Commands
 
@@ -147,6 +175,8 @@ A typical task with 3 agents without debate: $0.30-0.80.
 | **code-review-graph** | AI code navigation: 28 MCP tools, auto-update |
 | **CodeCharta** | 3D code architecture visualization |
 | **prompt_toolkit** | TUI: autocomplete, history, status bar |
+| **Questionary** | Arrow-key select, checkbox menus (PM/team selection) |
+| **alive-progress** | Animated spinners during pipeline stages |
 
 ## Project Structure
 

@@ -27,25 +27,30 @@ matoi                # API key -> scan -> code graph -> team assembly
 matoi run "Validate market for AI-powered pet care"
 ```
 
-**6-stage pipeline:**
-1. **Selective Activation** -- Haiku analyzes the task and selects relevant agents from the team. Irrelevant ones are skipped (token savings)
-2. **PM Brief** -- PM formulates the goal, constraints, deliverables (Haiku)
-3. **Expert Pass** -- each active agent independently provides their opinion (Sonnet/Opus, streaming)
-4. **Conflict Detection** -- Haiku scans opinions, finds disagreements (severity >= 0.5)
-5. **Debate** -- if conflicts are found: structured rounds (claim/critique/concession/recommendation). If none -- skipped
-6. **Synthesis** -- PM synthesizes the decision incorporating debate results (Opus, streaming)
+**Two pipeline modes:**
+
+**Advisory Mode** (default) -- 5-stage pipeline:
+1. **PM Brief** -- PM formulates the goal, constraints, deliverables (Haiku)
+2. **Expert Pass** -- each active agent independently provides their opinion (Sonnet/Opus, streaming)
+3. **Conflict Detection** -- Haiku scans opinions, finds disagreements (severity >= 0.5)
+4. **Debate** -- if conflicts are found: structured rounds (claim/critique/concession/recommendation). If none -- skipped
+5. **Synthesis** -- PM synthesizes the decision incorporating debate results (Opus, streaming)
+
+**Execution Mode** (`/execute`) -- PM decomposes the task into subtasks and dispatches them to agents. Each subtask gets a status: DONE or BLOCKED. The PM tracks progress and reports results.
 
 Artifacts: brief.md, opinion_*.md, debate.md, decision.md, cost.json
+
+Standup notes are auto-generated on session exit, summarizing decisions made, work done, and blockers.
 
 ## 17 Agents in 6 Categories
 
 ### Coordinators [PM] -- PM agents with different styles
-| Agent | Style | Risk Tolerance |
-|-------|-------|---------------|
-| **Startup PM** | Speed, ship fast, cut scope | High (0.8) |
-| **Delivery PM** | Predictability, decomposition, milestones | Low (0.3) |
-| **Enterprise PM** | Documentation, compliance, audit | Minimal (0.1) |
-| **Product Strategist PM** | User value, research first | Medium (0.5) |
+| Agent | Name | Style | Risk Tolerance |
+|-------|------|-------|---------------|
+| **Startup PM** | Oliver | Speed, ship fast, cut scope | High (0.8) |
+| **Delivery PM** | Aurora | Predictability, decomposition, milestones | Low (0.3) |
+| **Enterprise PM** | Marcus | Documentation, compliance, audit | Minimal (0.1) |
+| **Product Strategist PM** | Stella | User value, research first | Medium (0.5) |
 
 ### Executors [EXE] -- implementation
 | Agent | Iron Law |
@@ -76,7 +81,7 @@ Artifacts: brief.md, opinion_*.md, debate.md, decision.md, cost.json
 
 ```bash
 matoi                                   # Onboarding: API key, scan, graph, team
-matoi run "task"                        # 6-stage pipeline with streaming
+matoi run "task"                        # Advisory pipeline with streaming
 matoi run "task" --budget 1.0           # With budget limit
 matoi cost                              # Cost breakdown by sessions and models
 
@@ -103,12 +108,29 @@ matoi viz status                        # Visualization status
 matoi task plan "task" --team demo      # Dry run with model routing
 ```
 
+## Session Commands (inside REPL)
+
+```
+/help     -- all commands
+/team     -- current team
+/agents   -- all 17 agents
+/cost     -- session cost
+/history  -- tasks in this session
+/standup  -- auto-generated standup notes
+/execute  -- PM decomposes task, agents execute with DONE/BLOCKED
+/commit   -- review -> debate -> commit -> update graph
+/key      -- change API key mid-session
+/quit     -- exit (Ctrl+D)
+```
+
 ## Tech Stack
 
 | Component | Technology |
 |-----------|-----------|
 | Language | Python 3.11+ |
-| CLI | Typer + Rich |
+| CLI | Typer + Rich + prompt_toolkit |
+| Interactive menus | Questionary (arrow-key select, checkbox) |
+| Progress | alive-progress (animated spinners) |
 | Models | Pydantic v2 |
 | LLM | Anthropic Python SDK (not Agent SDK) |
 | Agents | Markdown + YAML frontmatter |

@@ -104,6 +104,29 @@ Open-source projects integrated into Matoi.
 
 ---
 
+## [Questionary](https://github.com/tmbo/questionary) -- interactive menus
+
+**What:** A library for building interactive CLI prompts with arrow-key navigation.
+
+**How we use it:**
+- PM selection: arrow-key select from Oliver/Aurora/Marcus/Stella with descriptions
+- Team assembly: checkbox multi-select for agents
+- Auto/manual team mode selection
+- Replaces raw input() with polished interactive menus
+
+---
+
+## [alive-progress](https://github.com/rsalmei/alive-progress) -- progress spinners
+
+**What:** An animated progress bar library for the terminal.
+
+**How we use it:**
+- Animated spinners during pipeline stages (brief, expert pass, conflict detection, synthesis)
+- Visual feedback while waiting for API responses
+- Non-blocking display that works alongside streaming output
+
+---
+
 ## [Pillow](https://github.com/python-pillow/Pillow) -- pixel-art avatars
 
 **What:** An image processing library.
