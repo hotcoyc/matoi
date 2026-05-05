@@ -20,7 +20,7 @@ def test_get_startup_pm():
     registry.load_all()
     pm = registry.get("startup-pm")
     assert pm is not None
-    assert pm.name == "Startup PM"
+    assert "Startup PM" in pm.name  # Oliver (Startup PM)
     assert pm.risk_tolerance == 0.8
     assert pm.motto == "Ship it by Friday."
 

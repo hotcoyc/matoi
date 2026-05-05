@@ -50,6 +50,8 @@ COMMANDS = {
     "/agents": "Show all available agents",
     "/cost": "Show session cost so far",
     "/history": "Show tasks run in this session",
+    "/standup": "Generate session summary",
+    "/execute": "PM breaks task into subtasks, agents execute",
     "/commit": "Review changes, debate, commit",
     "/key": "Change API key",
     "/quit": "End session (Ctrl+D)",
@@ -359,6 +361,14 @@ class Session:
                     self._show_agents()
                 elif cmd == "/history":
                     self._show_history()
+                elif cmd == "/standup":
+                    self._generate_standup()
+                elif cmd == "/execute":
+                    rest = user_input[len("/execute"):].strip()
+                    if rest:
+                        self._execute_task(rest)
+                    else:
+                        console.print("  [dim]Usage: /execute <task description>[/dim]")
                 elif cmd == "/key":
                     self._change_key()
                 else:
@@ -385,6 +395,8 @@ class Session:
 
         # ── Session end ──
         console.print()
+        if self.history and self.pm and self.provider:
+            self._generate_standup()
         self._show_cost()
         console.print("[dim]Session ended.[/dim]\n")
 
@@ -611,6 +623,82 @@ class Session:
         for i, h in enumerate(self.history, 1):
             console.print(f"  {i}. {h['task'][:60]} ({h['timestamp'][:16]})")
         console.print()
+
+    def _execute_task(self, task: str) -> None:
+        """Subagent-driven execution: PM decomposes, agents execute, critics review."""
+        if not self.pm or not self.provider or not self.agents:
+            console.print("  [dim]Need PM and team to execute.[/dim]")
+            return
+
+        from matoi.orchestrator.dispatch import SubagentDispatcher
+
+        dispatcher = SubagentDispatcher(
+            pm=self.pm,
+            agents=self.agents,
+            registry=self.registry,
+            provider=self.provider,
+            router=self.router,
+        )
+
+        results = dispatcher.execute(task, self._call_agent)
+
+        # Save to history
+        self.history.append({
+            "task": f"[execute] {task}",
+            "brief": "",
+            "opinions": {r.agent_slug: r.output[:200] for r in results},
+            "decision": f"{len(results)} subtasks: {sum(1 for r in results if r.status == 'DONE')} done, "
+                        f"{sum(1 for r in results if r.status == 'BLOCKED')} blocked",
+            "timestamp": datetime.now().isoformat(),
+        })
+
+    def _generate_standup(self) -> None:
+        """PM generates session summary."""
+        if not self.history or not self.pm or not self.provider:
+            console.print("  [dim]No tasks to summarize.[/dim]")
+            return
+
+        # Build context from session history
+        tasks_summary = ""
+        for i, h in enumerate(self.history, 1):
+            tasks_summary += f"\n### Task {i}: {h['task'][:100]}\n"
+            if h.get("decision"):
+                tasks_summary += f"Decision: {h['decision'][:300]}\n"
+
+        cost = self.cost_tracker.summary()
+
+        system = (
+            f"You are {self.pm.name}, a {self.pm.role}.\n"
+            "Generate a concise session standup report. Include:\n"
+            "1. **Done** -- what was accomplished (bullet points)\n"
+            "2. **Decisions** -- key decisions made\n"
+            "3. **Blockers** -- open questions or blockers\n"
+            "4. **Next steps** -- what to do next session\n\n"
+            "Max 200 words. No filler."
+        )
+
+        user_msg = (
+            f"Session with {len(self.history)} tasks.\n"
+            f"Team: {', '.join(a.name for a in self.agents)}\n"
+            f"Cost: ${cost['total_cost_usd']:.4f}, {cost.get('total_tokens', 0):,} tokens\n"
+            f"\n{tasks_summary}"
+        )
+
+        console.rule("[bold]Session Standup[/bold]")
+        standup = self._call_agent(self.pm, "synthesis", user_msg)
+
+        # Save as artifact
+        from matoi.core.config import get_project_dir
+        project_dir = get_project_dir()
+        artifacts_dir = project_dir / "artifacts"
+        artifacts_dir.mkdir(parents=True, exist_ok=True)
+        standup_file = artifacts_dir / f"standup_{self.session_id}.md"
+        standup_file.write_text(f"# Session Standup -- {self.session_id}\n\n{standup}")
+        console.print(f"  [dim]Saved: {standup_file}[/dim]")
+
+        # Index into MemPalace
+        if self.memory:
+            self.memory.store_artifacts(self.session_id, artifacts_dir)
 
     def _change_key(self) -> None:
         """Change API key."""
