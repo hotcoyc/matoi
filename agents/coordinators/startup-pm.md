@@ -1,5 +1,5 @@
 ---
-name: Startup PM
+name: Oliver (Startup PM)
 role: Project Manager (Startup Style)
 category: quality
 type: coordinator

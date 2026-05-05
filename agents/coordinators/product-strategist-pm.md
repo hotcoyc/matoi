@@ -1,5 +1,5 @@
 ---
-name: Product Strategist PM
+name: Stella (Product Strategist PM)
 role: Project Manager (Product Strategy Style)
 category: quality
 type: coordinator

@@ -1,5 +1,5 @@
 ---
-name: Delivery PM
+name: Aurora (Delivery PM)
 role: Project Manager (Delivery Style)
 category: quality
 type: coordinator
