@@ -119,11 +119,14 @@ class Session:
         console.print()
 
         if goal.strip():
-            choice = Prompt.ask(
-                "  Assemble team",
-                choices=["auto", "manual"],
-                default="auto",
-            )
+            import questionary
+            choice = questionary.select(
+                "Assemble team:",
+                choices=[
+                    questionary.Choice("Auto -- PM recommends team", value="auto"),
+                    questionary.Choice("Manual -- pick agents yourself", value="manual"),
+                ],
+            ).ask()
             if choice == "manual":
                 self._manual_team_selection()
             else:
@@ -175,26 +178,36 @@ class Session:
         console.print("  [green]Saved.[/green]\n")
 
     def _pick_pm(self) -> None:
-        """Interactive PM selection."""
-        from matoi.cli.team import _render_pm_gallery, PM_COLORS
+        """Interactive PM selection with arrow-key menu."""
+        import questionary
 
         coordinators = self.registry.list_by_type("coordinator")
         if not coordinators:
             console.print("[red]No PM agents found.[/red]")
             raise SystemExit(1)
 
-        _render_pm_gallery(coordinators)
+        choices = [
+            questionary.Choice(
+                title=f'{pm.name} -- "{pm.motto}"',
+                value=pm.slug,
+            )
+            for pm in coordinators
+        ]
 
-        choices_display = ", ".join(
-            f"[bold]{i + 1}[/bold]={c.slug}" for i, c in enumerate(coordinators)
-        )
-        console.print(f"\n  {choices_display}")
+        slug = questionary.select(
+            "Select your PM:",
+            choices=choices,
+            style=questionary.Style([
+                ("highlighted", "bold"),
+                ("selected", "bold fg:cyan"),
+                ("pointer", "bold fg:cyan"),
+            ]),
+        ).ask()
 
-        choice = Prompt.ask(
-            "\n  Select PM",
-            choices=[str(i + 1) for i in range(len(coordinators))],
-        )
-        self.pm = coordinators[int(choice) - 1]
+        if slug is None:
+            raise SystemExit(0)
+
+        self.pm = self.registry.get(slug)
         self._show_pm_avatar()
 
     def _show_pm_avatar(self) -> None:
@@ -207,42 +220,46 @@ class Session:
         console.print(f"  [bold]{self.pm.name}[/bold] -- \"{self.pm.motto}\"")
 
     def _manual_team_selection(self) -> None:
-        """Let user pick agents manually."""
+        """Let user pick agents with checkbox menu."""
+        import questionary
+
         all_agents = [a for a in self.registry.list_all() if a.agent_type.value != "coordinator"]
 
-        table = Table(border_style="dim", show_lines=False)
-        table.add_column("#", style="bold", width=3, justify="right")
-        table.add_column("Agent", min_width=20)
-        table.add_column("Type", width=8)
-        table.add_column("Category", width=16)
+        TYPE_LABELS = {"executor": "EXE", "thinker": "THK", "critic": "CRT"}
 
-        for i, a in enumerate(all_agents, 1):
-            table.add_row(str(i), a.name, a.agent_type.value, a.category.value)
+        choices = [
+            questionary.Choice(
+                title=f'[{TYPE_LABELS.get(a.agent_type.value, "?")}] {a.name} ({a.category.value})',
+                value=a.slug,
+            )
+            for a in all_agents
+        ]
 
-        console.print(table)
-        console.print("  [dim]Enter numbers separated by commas (e.g. 1,3,5), max 4:[/dim]")
-        raw = Prompt.ask("  Agents")
+        selected = questionary.checkbox(
+            "Select agents (space to toggle, enter to confirm, max 4):",
+            choices=choices,
+            validate=lambda x: len(x) <= 4 or "Maximum 4 agents",
+        ).ask()
+
+        if not selected:
+            console.print("  [dim]No agents selected, using defaults.[/dim]")
+            self.agents = list(all_agents[:3])
+            return
 
         self.agents = []
-        for part in raw.split(","):
-            part = part.strip()
-            if part.isdigit():
-                idx = int(part) - 1
-                if 0 <= idx < len(all_agents) and len(self.agents) < 4:
-                    self.agents.append(all_agents[idx])
+        for slug in selected[:4]:
+            agent = self.registry.get(slug)
+            if agent:
+                self.agents.append(agent)
 
-        if self.agents:
-            names = ", ".join(f"[bold]{a.name}[/bold]" for a in self.agents)
-            console.print(f"\n  Team: {names}")
+        names = ", ".join(f"[bold]{a.name}[/bold]" for a in self.agents)
+        console.print(f"\n  Team: {names}")
 
-            pc = load_project_config() or ProjectConfig()
-            pc.pm = self.pm.slug if self.pm else ""
-            pc.agents = [a.slug for a in self.agents]
-            pc.project_name = pc.project_name or Path.cwd().name
-            save_project_config(pc)
-        else:
-            console.print("  [dim]No agents selected, using defaults.[/dim]")
-            self.agents = [a for a in all_agents[:3]]
+        pc = load_project_config() or ProjectConfig()
+        pc.pm = self.pm.slug if self.pm else ""
+        pc.agents = [a.slug for a in self.agents]
+        pc.project_name = pc.project_name or Path.cwd().name
+        save_project_config(pc)
 
     def _recommend_team(self, goal: str) -> None:
         """PM recommends team composition based on the goal."""
@@ -265,10 +282,10 @@ class Session:
 
         model_id = MODEL_MAP[self.pm.model_policy.brief]
 
-        console.print(f"  [dim]{self.pm.name} is assembling your team...[/dim]")
-
         try:
-            text, cost = self.provider.call(model_id, system, goal, max_tokens=200)
+            from alive_progress import alive_bar
+            with alive_bar(title=f"  {self.pm.name} assembling team", bar=False, spinner="dots_waves"):
+                text, cost = self.provider.call(model_id, system, goal, max_tokens=200)
             cost.agent_slug = self.pm.slug
             cost.stage = "team_recommend"
             self.cost_tracker.record(cost)
