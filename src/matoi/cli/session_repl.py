@@ -76,12 +76,14 @@ class Session:
     def start(self) -> None:
         """Main entry point for interactive session."""
         console.print()
-        console.print(Panel(
-            "[bold]Matoi[/bold] -- your startup team in the terminal.\n"
-            "Type your task, agents will respond.\n"
-            "/help for commands, /commit before committing, /quit to exit.",
-            border_style="bold white",
-        ))
+        try:
+            import pyfiglet
+            banner = pyfiglet.figlet_format("MATOI", font="block")
+            console.print(f"[bold cyan]{banner}[/bold cyan]", highlight=False)
+        except ImportError:
+            console.print("[bold cyan]MATOI[/bold cyan]")
+        console.print("  [dim]Your startup team in the terminal.[/dim]")
+        console.print("  [dim]/help for commands, /commit before committing, /quit to exit.[/dim]")
         console.print()
 
         # ── Ensure API key ──
