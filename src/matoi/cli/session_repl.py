@@ -92,8 +92,10 @@ class Session:
 
         # ── Ensure project initialized ──
         project_dir = get_project_dir()
-        if not (project_dir / "config.json").exists():
+        first_run = not (project_dir / "config.json").exists()
+        if first_run:
             ensure_project_structure()
+            self._first_run_setup()
 
         # ── Setup memory ──
         self.memory = MemoryStore(project_dir)
@@ -144,6 +146,70 @@ class Session:
 
         # ── REPL loop ──
         self._repl(goal)
+
+    def _first_run_setup(self) -> None:
+        """Auto-setup on first run: code graph, mempalace, codecharta."""
+        import shutil
+        import subprocess
+        cwd = Path.cwd()
+
+        console.print("  [dim]First run -- setting up project tools...[/dim]\n")
+
+        # code-review-graph
+        if shutil.which("code-review-graph"):
+            try:
+                console.print("  [dim]Building code graph...[/dim]")
+                result = subprocess.run(
+                    ["code-review-graph", "build"],
+                    cwd=cwd, capture_output=True, text=True, timeout=60,
+                )
+                if result.returncode == 0:
+                    console.print("  [green]Code graph built.[/green]")
+                    # Generate visualization
+                    subprocess.run(
+                        ["code-review-graph", "visualize"],
+                        cwd=cwd, capture_output=True, text=True, timeout=30,
+                    )
+            except (subprocess.TimeoutExpired, Exception):
+                pass
+
+        # mempalace
+        if shutil.which("mempalace"):
+            try:
+                mempalace_yaml = cwd / "mempalace.yaml"
+                if not mempalace_yaml.exists():
+                    console.print("  [dim]Initializing memory...[/dim]")
+                    subprocess.run(
+                        ["mempalace", "init", str(cwd), "--yes"],
+                        capture_output=True, text=True, timeout=30,
+                    )
+                    subprocess.run(
+                        ["mempalace", "mine", str(cwd), "--wing", cwd.name],
+                        capture_output=True, text=True, timeout=60,
+                    )
+                    console.print("  [green]Memory initialized.[/green]")
+            except (subprocess.TimeoutExpired, Exception):
+                pass
+
+        # CodeCharta (npm)
+        if shutil.which("ccsh"):
+            try:
+                console.print("  [dim]Building 3D code city...[/dim]")
+                env = os.environ.copy()
+                java17 = "/opt/homebrew/opt/openjdk@17/bin"
+                if Path(java17).exists():
+                    env["PATH"] = f"{java17}:{env.get('PATH', '')}"
+                output_name = cwd.name or "project"
+                src_arg = "src/" if (cwd / "src").is_dir() else "."
+                subprocess.run(
+                    ["ccsh", "unifiedparser", f"-o={output_name}", src_arg],
+                    cwd=cwd, capture_output=True, text=True, timeout=120, env=env,
+                )
+                console.print("  [green]3D city built.[/green]")
+            except (subprocess.TimeoutExpired, Exception):
+                pass
+
+        console.print()
 
     def _ensure_api_key(self) -> None:
         """Check API key, prompt if missing or invalid."""
