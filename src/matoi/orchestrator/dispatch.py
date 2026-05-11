@@ -6,6 +6,8 @@ DONE, DONE_WITH_CONCERNS, BLOCKED, NEEDS_CONTEXT.
 """
 
 import json
+import re
+from pathlib import Path
 
 from rich.console import Console
 from rich.table import Table
@@ -105,7 +107,13 @@ class SubagentDispatcher:
             user_msg = (
                 f"## Your subtask\n{st['subtask']}\n\n"
                 f"## Context (original task)\n{task}\n\n"
-                "Complete this subtask. At the end, state your status:\n"
+                f"## Working directory\n{Path.cwd()}\n\n"
+                "IMPORTANT: If your subtask requires writing code, include the FULL file content "
+                "in a code block with the filename as the language tag. Example:\n"
+                "```index.html\n<full file content here>\n```\n"
+                "```style.css\n<full file content here>\n```\n\n"
+                "Write complete, working files. No placeholders, no TODOs, no truncation.\n\n"
+                "At the end, state your status:\n"
                 "- DONE -- if completed successfully\n"
                 "- DONE_WITH_CONCERNS -- if done but you have concerns\n"
                 "- BLOCKED -- if you can't proceed\n"
@@ -113,6 +121,11 @@ class SubagentDispatcher:
             )
 
             output = call_agent_fn(agent, "expert_pass", user_msg)
+
+            # Extract and write files from code blocks
+            written = _extract_and_write_files(output, Path.cwd())
+            if written:
+                console.print(f"  [green]Wrote {len(written)} file(s): {', '.join(written)}[/green]")
 
             # Extract status from output
             status = "DONE"
@@ -186,3 +199,36 @@ class SubagentDispatcher:
         blocked = [r for r in results if r.status in ("BLOCKED", "NEEDS_CONTEXT")]
         if blocked:
             console.print(f"\n  [yellow]{len(blocked)} subtask(s) need attention.[/yellow]")
+
+
+def _extract_and_write_files(output: str, cwd: Path) -> list[str]:
+    """Extract code blocks with filenames and write to disk.
+
+    Looks for patterns like:
+    ```filename.ext
+    <content>
+    ```
+    """
+    written = []
+    # Match ```filename\n...\n```
+    pattern = r"```(\S+\.\w+)\n(.*?)```"
+    matches = re.findall(pattern, output, re.DOTALL)
+
+    for filename, content in matches:
+        # Skip non-file language tags
+        if filename in ("bash", "shell", "sh", "python", "json", "yaml", "text", "plaintext",
+                         "javascript", "typescript", "html", "css", "sql", "markdown", "md"):
+            continue
+
+        # Safety: no path traversal
+        if ".." in filename or "/" in filename:
+            continue
+
+        filepath = cwd / filename
+        try:
+            filepath.write_text(content.strip() + "\n")
+            written.append(filename)
+        except Exception:
+            pass
+
+    return written

@@ -126,6 +126,17 @@ class Session:
         console.print()
 
         if goal.strip():
+            # Hint if PM style might be wrong for the goal
+            if self.pm and self.pm.slug == "enterprise-pm":
+                goal_lower = goal.lower()
+                simple_keywords = ["game", "tetris", "todo", "prototype", "mvp", "simple", "quick",
+                                   "landing", "demo", "test", "try", "play", "fun"]
+                if any(k in goal_lower for k in simple_keywords):
+                    console.print(
+                        f"  [dim]Hint: {self.pm.name} is compliance-focused. "
+                        f"For quick builds, Oliver (Startup PM) might be faster.[/dim]"
+                    )
+
             import questionary
             choice = questionary.select(
                 "Assemble team:",
@@ -538,24 +549,40 @@ class Session:
 
         # Build context-aware user message
         context_prefix = ""
+
+        # Include task-level history (decisions from previous tasks)
+        if self.history:
+            task_context = "## Session history\n"
+            for h in self.history[-3:]:  # last 3 tasks
+                task_context += f"- Task: {h['task'][:100]}\n"
+                if h.get("decision"):
+                    task_context += f"  Decision: {h['decision'][:200]}\n"
+            context_prefix += task_context + "\n"
+
+        # Include recent message-level context
         if self.context_history:
-            # Include compacted context for continuity
-            recent_context = self.context_history[-3:]  # last 3 exchanges
+            recent_context = self.context_history[-6:]  # last 6 exchanges
+            msg_context = "## Recent conversation\n"
             for msg in recent_context:
                 role = msg.get("role", "")
-                content = msg.get("content", "")[:200]
+                content = msg.get("content", "")[:300]
                 if content:
-                    context_prefix += f"[Previous {role}]: {content}\n"
-            if context_prefix:
-                context_prefix = f"## Recent context\n{context_prefix}\n"
+                    msg_context += f"[{role}]: {content}\n"
+            context_prefix += msg_context + "\n"
 
         system = (
             f"You are {agent.name}, a {agent.role}.\n"
             f"Motto: \"{agent.motto}\"\n\n"
             f"{agent.system_prompt}\n\n"
-            "IMPORTANT: Be concise. No filler, no self-introductions, no preamble. "
-            "Go straight to the point. Max 300 words per response. "
-            "Do not explain who you are or what you can do -- just do the work."
+            "CRITICAL RULES:\n"
+            "1. Be concise. Max 200 words. No filler, no self-introductions.\n"
+            "2. ADAPT to task complexity. Simple task = simple answer. "
+            "Do NOT add compliance gates, sign-off documents, or open-question blockers "
+            "for straightforward tasks like 'build a game' or 'create a landing page.'\n"
+            "3. If the task is clear enough to start, START. Do not ask for more context "
+            "unless genuinely missing critical information.\n"
+            "4. Do the work, not the paperwork. Produce deliverables, not process documents.\n"
+            "5. When writing code, write COMPLETE working code. No truncation, no TODOs."
         )
 
         full_msg = f"{context_prefix}{user_msg}" if context_prefix else user_msg

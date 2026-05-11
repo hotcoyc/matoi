@@ -210,7 +210,7 @@ class MVPPipeline:
             "2. Constraints — budget, time, scope limits\n"
             "3. Deliverables — what the team should produce\n"
             "4. Open questions — what we don't know yet\n\n"
-            "Be concise and actionable. Max 200 words. No self-introductions."
+            "Be concise. Max 150 words. No self-introductions. Adapt to complexity -- simple task = simple brief. Do NOT add compliance gates for straightforward tasks."
         )
 
         user_msg = task
@@ -241,7 +241,7 @@ class MVPPipeline:
             "2. Your specific recommendations from your area of expertise\n"
             "3. Risks and concerns you see\n"
             "4. What you disagree with or would do differently\n\n"
-            "Be concise. Max 300 words. No self-introductions, no preamble. Go straight to your recommendations."
+            "Be concise. Max 200 words. No self-introductions. Go straight to recommendations. If the task is clear, do the work -- don't ask for more context."
         )
         user_msg = f"## Task\n{task}\n\n## PM Brief\n{brief}"
 
