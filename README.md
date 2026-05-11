@@ -149,6 +149,29 @@ Session: 15 tasks, 50+ agent responses
 
 Each agent is a `.md` file with YAML frontmatter: role, debate style, model policy, strengths, weaknesses, activation rules.
 
+## CLI Commands
+
+```bash
+matoi                          # interactive session
+matoi run "task"               # one-shot pipeline
+matoi cost                     # cost breakdown by sessions and models
+matoi history                  # browse past sessions and artifacts
+
+matoi roster list              # agent table
+matoi roster show startup-pm   # card with pixel-art avatar
+
+matoi team create              # assemble a team
+matoi team show / list         # view teams
+
+matoi memory show              # MemPalace status
+matoi memory search "query"    # semantic memory search
+
+matoi viz graph                # dependency graph in browser
+matoi viz city                 # 3D code city (CodeCharta)
+
+matoi task plan "task" -t demo # dry run
+```
+
 ## Session Commands
 
 ```
