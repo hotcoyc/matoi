@@ -38,7 +38,7 @@ $ matoi
   [ai-agency-platform/Oliver] > _
 ```
 
-You enter tasks -- the agent team responds in real time with markdown rendering. Before a commit, agents review changes and debate if there are disagreements.
+You enter tasks -- the agent team responds in real time with markdown rendering. Before a commit, agents review changes and debate if there are disagreements. Long sessions are handled automatically -- old context is compressed when it reaches 85% of the model's window, while full history is preserved in MemPalace.
 
 ## Two Pipeline Modes
 
@@ -71,6 +71,18 @@ PM decomposes -> 4 subtasks:
 ```
 
 Each subtask gets a status: DONE or BLOCKED. The PM tracks progress and reports results.
+
+### Context Compaction
+
+Long sessions are handled automatically. When conversation history reaches 85% of the context window (~170K tokens), old messages are summarized via Haiku (~$0.003). Recent messages stay verbatim. Full history is preserved in MemPalace.
+
+```
+Session: 15 tasks, 50+ agent responses
+  -> context at 85% (170K tokens)
+  -> old messages compressed to summary (500 tokens)
+  -> last 6 messages kept as-is
+  -> session continues without degradation
+```
 
 ## 17 Agents
 

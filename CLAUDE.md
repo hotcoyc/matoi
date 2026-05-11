@@ -7,12 +7,13 @@ A CLI platform where AI agents work as a complete startup team.
 - `src/matoi/` — main platform code
   - `cli/` — CLI Layer (Typer), commands `matoi roster|team|task|session`, REPL (`session_repl.py`)
   - `core/` — Pydantic domain models (agent, team, task, session, cost, config, scanner)
-  - `orchestrator/` — Advisory pipeline, dispatch (execution mode), debate engine, conflict detection, synthesis
+  - `orchestrator/` — Advisory pipeline, dispatch (execution mode), debate engine, conflict detection, synthesis, compaction
     - `pipeline.py` — Advisory mode (brief->expert->conflict->debate->synthesis)
     - `dispatch.py` — Execution mode (/execute: PM decomposes->agents execute subtasks)
     - `conflict.py` — Conflict detection
     - `debate.py` — Structured debate engine
     - `synthesis.py` — PM synthesis
+    - `compaction.py` — Context compaction (summarize old messages at 85% of context window)
   - `agents/` — Agent Runtime: registry (.md parser), activation logic
   - `storage/` — Artifacts writer, session persistence, cost tracking (SQLite/JSON)
   - `gateway/` — Model Gateway: cost-intelligent routing, Anthropic SDK wrapper
@@ -42,6 +43,7 @@ A CLI platform where AI agents work as a complete startup team.
 - Artifacts > conversations — the result = files, not chat text
 - Cost-aware — Haiku for routine, Sonnet for work, Opus for strategy
 - PM is in charge — not chaotic peer-to-peer, but a managed pipeline
+- Context compaction — old messages auto-summarized at 85% window, full history in MemPalace
 
 <!-- code-review-graph MCP tools -->
 ## MCP Tools: code-review-graph
