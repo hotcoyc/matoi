@@ -69,7 +69,8 @@ class Session:
         self.pm: AgentDefinition | None = None
         self.agents: list[AgentDefinition] = []
         self.session_id = datetime.now().strftime("%Y%m%d_%H%M%S")
-        self.history: list[dict] = []
+        self.history: list[dict] = []  # task-level history for standup
+        self.context_history: list[dict] = []  # message-level history for compaction
         self.memory: MemoryStore | None = None
         self.prompt: MatoiPrompt | None = None
 
@@ -524,10 +525,29 @@ class Session:
         console.print()
 
     def _call_agent(self, agent: AgentDefinition, stage: str, user_msg: str) -> str:
-        """Call an agent with live markdown rendering."""
+        """Call an agent with live markdown rendering and context compaction."""
         from rich.live import Live
+        from matoi.orchestrator.compaction import needs_compaction, compact_history
 
         model_id = self.router.resolve_model(agent, stage)
+
+        # Check compaction before call
+        if needs_compaction(self.context_history, model_id):
+            console.print("  [dim]Compacting context...[/dim]")
+            self.context_history = compact_history(self.context_history, self.provider)
+
+        # Build context-aware user message
+        context_prefix = ""
+        if self.context_history:
+            # Include compacted context for continuity
+            recent_context = self.context_history[-3:]  # last 3 exchanges
+            for msg in recent_context:
+                role = msg.get("role", "")
+                content = msg.get("content", "")[:200]
+                if content:
+                    context_prefix += f"[Previous {role}]: {content}\n"
+            if context_prefix:
+                context_prefix = f"## Recent context\n{context_prefix}\n"
 
         system = (
             f"You are {agent.name}, a {agent.role}.\n"
@@ -538,6 +558,8 @@ class Session:
             "Do not explain who you are or what you can do -- just do the work."
         )
 
+        full_msg = f"{context_prefix}{user_msg}" if context_prefix else user_msg
+
         full_text = ""
         cost = None
 
@@ -545,7 +567,7 @@ class Session:
 
         # Stream and render markdown live
         with Live(Markdown(""), console=console, refresh_per_second=4) as live:
-            for chunk in self.provider.stream(model_id, system, user_msg):
+            for chunk in self.provider.stream(model_id, system, full_msg):
                 if isinstance(chunk, CostRecord):
                     cost = chunk
                 else:
@@ -561,6 +583,10 @@ class Session:
             cost.agent_slug = agent.slug
             cost.stage = stage
             self.cost_tracker.record(cost)
+
+        # Track in context history
+        self.context_history.append({"role": "user", "content": user_msg[:500]})
+        self.context_history.append({"role": agent.slug, "content": full_text[:500]})
 
         return full_text
 
