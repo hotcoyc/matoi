@@ -93,26 +93,45 @@ class Session:
 
         # ── Ensure project initialized ──
         project_dir = get_project_dir()
-        first_run = not (project_dir / "config.json").exists()
-        if first_run:
+        has_config = (project_dir / "config.json").exists()
+
+        if not has_config:
+            # First run -- full setup
             ensure_project_structure()
             self._first_run_setup()
+            self._new_session_setup()
+        else:
+            # Existing project -- ask continue or new
+            import questionary
+            choice = questionary.select(
+                "Existing session found:",
+                choices=[
+                    questionary.Choice("Continue -- keep PM and team", value="continue"),
+                    questionary.Choice("New session -- pick new PM and team", value="new"),
+                ],
+            ).ask()
+
+            if choice == "new":
+                self._new_session_setup()
+            else:
+                self._continue_session()
 
         # ── Setup memory ──
         self.memory = MemoryStore(project_dir)
 
-        # ── Pick PM ──
-        project_config = load_project_config()
-        if project_config and project_config.pm:
-            self.pm = self.registry.get(project_config.pm)
-            if self.pm:
-                self._show_pm_avatar()
-            else:
-                self._pick_pm()
-        else:
-            self._pick_pm()
+        if self.prompt:
+            self.prompt.update_status(
+                team_size=len(self.agents),
+                pm_name=self.pm.name if self.pm else "",
+            )
 
-        # ── Initialize TUI prompt ──
+        # ── REPL loop ──
+        self._repl(goal)
+
+    def _new_session_setup(self) -> None:
+        """Pick PM, describe goal, assemble team. Used on first run or new session."""
+        self._pick_pm()
+
         agent_slugs = [a.slug for a in self.registry.list_all()]
         self.prompt = MatoiPrompt(
             project_name=Path.cwd().name,
@@ -120,13 +139,11 @@ class Session:
             agent_slugs=agent_slugs,
         )
 
-        # ── Describe goal -> assemble team ──
         console.print()
         goal = self.prompt.ask_initial("What are you working on today?")
         console.print()
 
         if goal.strip():
-            # Hint if PM style might be wrong for the goal
             if self.pm and self.pm.slug == "enterprise-pm":
                 goal_lower = goal.lower()
                 simple_keywords = ["game", "tetris", "todo", "prototype", "mvp", "simple", "quick",
@@ -156,8 +173,38 @@ class Session:
                 pm_name=self.pm.name if self.pm else "",
             )
 
-        # ── REPL loop ──
-        self._repl(goal)
+    def _continue_session(self) -> None:
+        """Load PM and team from saved config."""
+        project_config = load_project_config()
+        if project_config and project_config.pm:
+            self.pm = self.registry.get(project_config.pm)
+            if project_config.agents:
+                for slug in project_config.agents:
+                    agent = self.registry.get(slug)
+                    if agent:
+                        self.agents.append(agent)
+
+        if self.pm:
+            self._show_pm_avatar()
+            if self.agents:
+                names = ", ".join(a.name for a in self.agents)
+                console.print(f"  Team: {names}")
+        else:
+            console.print("  [dim]No PM in saved config. Starting new session.[/dim]")
+            self._new_session_setup()
+            return
+
+        agent_slugs = [a.slug for a in self.registry.list_all()]
+        self.prompt = MatoiPrompt(
+            project_name=Path.cwd().name,
+            pm_name=self.pm.name if self.pm else "",
+            agent_slugs=agent_slugs,
+        )
+        if self.prompt:
+            self.prompt.update_status(
+                team_size=len(self.agents),
+                pm_name=self.pm.name if self.pm else "",
+            )
 
     def _first_run_setup(self) -> None:
         """Auto-setup on first run: code graph, mempalace, codecharta."""
