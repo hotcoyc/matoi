@@ -126,7 +126,7 @@ class Session:
             )
 
         # ── REPL loop ──
-        self._repl(goal)
+        self._repl()
 
     def _new_session_setup(self) -> None:
         """Pick PM, describe goal, assemble team. Used on first run or new session."""
