@@ -862,16 +862,18 @@ class Session:
         table = Table(title="Session Cost", border_style="dim", show_lines=False)
         table.add_column("Agent", min_width=18)
         table.add_column("Stage", width=14)
+        table.add_column("Model", width=16)
         table.add_column("Tokens", justify="right", width=10)
         table.add_column("Cost", justify="right", style="yellow", width=10)
 
         for row in breakdown:
             tokens = row["input_tokens"] + row["output_tokens"]
-            table.add_row(row["agent"], row["stage"], f"{tokens:,}", f"${row['cost_usd']:.4f}")
+            model_short = row.get("model", "").replace("claude-", "").replace("-20251001", "")
+            table.add_row(row["agent"], row["stage"], model_short, f"{tokens:,}", f"${row['cost_usd']:.4f}")
 
         table.add_section()
         table.add_row(
-            "[bold]Total[/bold]", f"{summary['total_calls']} calls",
+            "[bold]Total[/bold]", f"{summary['total_calls']} calls", "",
             f"{summary.get('total_tokens', 0):,}",
             f"[bold]${summary['total_cost_usd']:.4f}[/bold]",
         )
