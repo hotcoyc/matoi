@@ -842,48 +842,63 @@ class Session:
         })
 
     def _generate_standup(self) -> None:
-        """PM generates session summary."""
-        if not self.history or not self.pm or not self.provider:
-            console.print("  [dim]No tasks to summarize.[/dim]")
+        """Generate session summary -- no LLM call, just facts."""
+        if not self.history:
             return
 
-        # Build context from session history
-        tasks_summary = ""
-        for i, h in enumerate(self.history, 1):
-            tasks_summary += f"\n### Task {i}: {h['task'][:100]}\n"
-            if h.get("decision"):
-                tasks_summary += f"Decision: {h['decision'][:300]}\n"
-
-        cost = self.cost_tracker.summary()
-
-        system = (
-            f"You are {self.pm.name}, a {self.pm.role}.\n"
-            "Generate a concise session standup report. Include:\n"
-            "1. **Done** -- what was accomplished (bullet points)\n"
-            "2. **Decisions** -- key decisions made\n"
-            "3. **Blockers** -- open questions or blockers\n"
-            "4. **Next steps** -- what to do next session\n\n"
-            "Max 200 words. No filler."
-        )
-
-        user_msg = (
-            f"Session with {len(self.history)} tasks.\n"
-            f"Team: {', '.join(a.name for a in self.agents)}\n"
-            f"Cost: ${cost['total_cost_usd']:.4f}, {cost.get('total_tokens', 0):,} tokens\n"
-            f"\n{tasks_summary}"
-        )
-
-        console.rule("[bold]Session Standup[/bold]")
-        standup = self._call_agent(self.pm, "synthesis", user_msg)
-
-        # Save as artifact
+        import subprocess
+        from rich.table import Table
         from matoi.core.config import get_project_dir
+
+        console.rule("[bold]Session Summary[/bold]")
+
+        # 1. Files created/modified
+        cwd = Path.cwd()
+        result = subprocess.run(
+            ["git", "diff", "--name-status", "HEAD~1"],
+            cwd=cwd, capture_output=True, text=True,
+        )
+        if result.returncode == 0 and result.stdout.strip():
+            console.print("\n  [bold]Files:[/bold]")
+            for line in result.stdout.strip().split("\n")[:15]:
+                parts = line.split("\t", 1)
+                if len(parts) == 2:
+                    status, name = parts
+                    label = {"A": "created", "M": "modified", "D": "deleted"}.get(status, status)
+                    console.print(f"    {name} [dim]({label})[/dim]")
+        else:
+            # No git -- check for new files in CWD
+            from matoi.orchestrator.dispatch import _extract_and_write_files
+            # Just list files from history context
+            pass
+
+        # 2. Tasks worked on
+        console.print(f"\n  [bold]Tasks:[/bold] {len(self.history)}")
+        for h in self.history:
+            console.print(f"    - {h['task'][:80]}")
+
+        # 3. Debates/conflicts
+        # Check if any debate artifacts exist
         project_dir = get_project_dir()
+        debate_files = list((project_dir / "artifacts").glob(f"debate_{self.session_id}*")) if (project_dir / "artifacts").exists() else []
+        if debate_files:
+            console.print(f"\n  [bold]Debates:[/bold] {len(debate_files)} conflict(s) resolved")
+        else:
+            console.print(f"\n  [bold]Debates:[/bold] none")
+
+        # 4. Save standup as artifact
         artifacts_dir = project_dir / "artifacts"
         artifacts_dir.mkdir(parents=True, exist_ok=True)
+        standup_lines = [f"# Session {self.session_id}", ""]
+        standup_lines.append(f"PM: {self.pm.name if self.pm else 'none'}")
+        standup_lines.append(f"Team: {', '.join(a.name for a in self.agents)}")
+        standup_lines.append(f"Tasks: {len(self.history)}")
+        for h in self.history:
+            standup_lines.append(f"  - {h['task'][:100]}")
         standup_file = artifacts_dir / f"standup_{self.session_id}.md"
-        standup_file.write_text(f"# Session Standup -- {self.session_id}\n\n{standup}")
-        console.print(f"  [dim]Saved: {standup_file}[/dim]")
+        standup_file.write_text("\n".join(standup_lines))
+
+        console.print()
 
         # Index into MemPalace
         if self.memory:
