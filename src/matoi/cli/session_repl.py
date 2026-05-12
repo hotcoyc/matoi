@@ -404,8 +404,9 @@ class Session:
         system = (
             f"You are {self.pm.name}. {self.pm.motto}\n"
             "The user described their goal. Recommend 2-4 agents from the list.\n"
-            "Return ONLY a JSON array of agent slugs.\n"
-            f"Example: [\"backend-engineer\", \"market-researcher\"]\n\n"
+            "Respond with ONLY a JSON array of agent slugs. Nothing else.\n"
+            "No explanation, no markdown, no text before or after the array.\n"
+            f"Example response: [\"backend-engineer\", \"frontend-engineer\"]\n\n"
             f"Available agents:\n{agents_desc}"
         )
 
@@ -414,17 +415,25 @@ class Session:
         try:
             from alive_progress import alive_bar
             with alive_bar(title=f"  {self.pm.name} assembling team", bar=False, spinner="dots_waves"):
-                text, cost = self.provider.call(model_id, system, goal, max_tokens=200)
+                text, cost = self.provider.call(model_id, system, goal, max_tokens=500)
             cost.agent_slug = self.pm.slug
             cost.stage = "team_recommend"
             self.cost_tracker.record(cost)
 
-            # Parse response
+            # Parse response -- extract JSON array from anywhere in text
+            import re
             text = text.strip()
-            if text.startswith("```"):
-                text = text.split("\n", 1)[1]
-            if text.endswith("```"):
-                text = text.rsplit("```", 1)[0]
+            # Try to find JSON array in response
+            match = re.search(r'\[.*?\]', text, re.DOTALL)
+            if match:
+                text = match.group(0)
+            else:
+                # Strip markdown fences
+                if text.startswith("```"):
+                    text = text.split("\n", 1)[1]
+                if text.endswith("```"):
+                    text = text.rsplit("```", 1)[0]
+                text = text.strip()
             slugs = json.loads(text)
 
             self.agents = []
