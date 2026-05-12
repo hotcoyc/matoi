@@ -1,9 +1,11 @@
-"""Memory system backed by MemPalace.
+"""Memory system backed by MemPalace -- per-project storage.
 
-Uses MemPalace for semantic search, knowledge graph, and artifact indexing.
-All methods silently fail if MemPalace is not available or errors occur.
+Each project gets its own memory in matoi/memory/.
+No cross-project contamination.
+All methods silently fail if MemPalace is not available.
 """
 
+import os
 from pathlib import Path
 
 from rich.console import Console
@@ -12,22 +14,28 @@ console = Console()
 
 
 class MemoryStore:
-    """Matoi memory backed by MemPalace."""
+    """Matoi memory backed by MemPalace. Per-project storage."""
 
     def __init__(self, project_dir: Path, wing: str = "matoi") -> None:
         self.project_dir = project_dir
         self.wing = wing
+        self.palace_path = str(project_dir / "memory" / "palace")
+        self.kg_path = str(project_dir / "memory" / "knowledge_graph.sqlite3")
+
+        # Ensure memory dir exists
+        (project_dir / "memory").mkdir(parents=True, exist_ok=True)
+
+        # Set env var so MemPalace uses per-project path
+        os.environ["MEMPALACE_PALACE_PATH"] = self.palace_path
 
     def store_artifacts(self, session_id: str, artifacts_dir: Path) -> int:
-        """Index pipeline artifacts into MemPalace."""
+        """Index pipeline artifacts into per-project MemPalace."""
         try:
             from mempalace.miner import mine
-            from mempalace.config import MempalaceConfig
 
-            config = MempalaceConfig()
             count = mine(
                 project_dir=str(artifacts_dir),
-                palace_path=config.palace_path,
+                palace_path=self.palace_path,
                 wing_override=self.wing,
             )
             return count or 0
@@ -35,7 +43,7 @@ class MemoryStore:
             return 0
 
     def search(self, query: str, n_results: int = 5) -> list[dict]:
-        """Semantic search across memory."""
+        """Semantic search across project memory."""
         try:
             from mempalace.searcher import search_memories
 
@@ -78,15 +86,6 @@ class MemoryStore:
         except Exception:
             return ""
 
-    def wake_up(self) -> str:
-        """Get startup context."""
-        try:
-            from mempalace.layers import MemoryStack
-            stack = MemoryStack()
-            return stack.wake_up(wing=self.wing)
-        except Exception:
-            return ""
-
     def status(self) -> dict:
         """Get memory status."""
         try:
@@ -103,10 +102,10 @@ class MemoryStore:
         confidence: float = 0.9,
         source_file: str = "",
     ) -> None:
-        """Add a triple to the knowledge graph."""
+        """Add a triple to the per-project knowledge graph."""
         try:
             from mempalace.knowledge_graph import KnowledgeGraph
-            kg = KnowledgeGraph()
+            kg = KnowledgeGraph(db_path=self.kg_path)
             kg.add_triple(
                 subject=subject,
                 predicate=predicate,
