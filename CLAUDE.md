@@ -8,7 +8,7 @@ Per-project layout (created inside user's working directory):
 
 ```
 ~/my-project/
-  matoi/
+  .matoi/
     config.json          -- PM + team for this project
     artifacts/           -- standup reports, debate transcripts
     memory/
@@ -52,7 +52,7 @@ Source layout:
 - prompt_toolkit for REPL (autocomplete with descriptions, history, status bar)
 - Anthropic Python SDK (not Agent SDK) -- full control over each call
 - Agent definitions: Markdown + YAML frontmatter, one file per agent
-- Memory is per-project (`matoi/memory/`), not global
+- Memory is per-project (`.matoi/memory/`), not global
 - Session exit prints summary: files created, tasks, debates, cost table with model column
 - Repeated launch offers Continue/New session
 - Team recommendation uses JSON regex parsing (fixed in v0.3.2)

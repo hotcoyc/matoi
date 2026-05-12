@@ -1,6 +1,6 @@
 """Memory system backed by MemPalace -- per-project storage.
 
-Each project gets its own memory in matoi/memory/.
+Each project gets its own memory in .matoi/memory/.
 No cross-project contamination.
 All methods silently fail if MemPalace is not available.
 """

@@ -23,7 +23,7 @@ Four PMs with genuinely different decision-making styles. Oliver cuts scope and 
 Haiku ($1/M) for routine work, Sonnet ($3/M) for expert opinions, Opus ($15/M) for strategic decisions. Not "expensive model for everything." A typical task with 3 agents costs $0.30-0.80.
 
 **Memory that persists -- per project.**
-MemPalace (96.6% recall) stores decisions, context, and knowledge across sessions in `matoi/memory/` inside the project directory. Agents don't start from zero every time. The PM's brief references what the team decided last week.
+MemPalace (96.6% recall) stores decisions, context, and knowledge across sessions in `.matoi/memory/` inside the project directory. Agents don't start from zero every time. The PM's brief references what the team decided last week.
 
 **Sessions that last for hours.**
 Context compaction kicks in at 85% of the window. Old messages are summarized via Haiku (~$0.003). Recent messages stay verbatim. Full history preserved in MemPalace. No degradation, no token explosion.
@@ -218,7 +218,7 @@ Typical task with 3 agents, no debate: $0.30-0.80.
 
 ```
 ~/my-project/
-  matoi/
+  .matoi/
     config.json          -- PM + team for this project
     artifacts/           -- standup reports, debate transcripts
     memory/

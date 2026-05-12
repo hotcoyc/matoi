@@ -11,8 +11,8 @@ from pydantic import BaseModel, Field
 GLOBAL_DIR = Path.home() / ".matoi"
 GLOBAL_CONFIG_FILE = GLOBAL_DIR / "config.json"
 
-# Project config lives in ./matoi/ inside user's project
-PROJECT_DIR_NAME = "matoi"
+# Project config lives in ./.matoi/ inside user's project
+PROJECT_DIR_NAME = ".matoi"
 
 
 class GlobalConfig(BaseModel):

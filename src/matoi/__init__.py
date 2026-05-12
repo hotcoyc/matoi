@@ -1,3 +1,3 @@
 """Matoi (纏) — CLI where AI agents work as a full startup team."""
 
-__version__ = "0.3.2"
+__version__ = "0.3.3"
