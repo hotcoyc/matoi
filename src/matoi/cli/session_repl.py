@@ -110,22 +110,9 @@ class Session:
             ensure_project_structure()
             _add_to_gitignore(Path.cwd())
             self._first_run_setup()
-            self._new_session_setup()
-        else:
-            # Existing project -- ask continue or new
-            import questionary
-            choice = questionary.select(
-                "Existing session found:",
-                choices=[
-                    questionary.Choice("Continue -- keep PM and team", value="continue"),
-                    questionary.Choice("New session -- pick new PM and team", value="new"),
-                ],
-            ).ask()
 
-            if choice == "new":
-                self._new_session_setup()
-            else:
-                self._continue_session()
+        # ── Main menu ──
+        self._main_menu(has_config)
 
         # ── Setup memory ──
         self.memory = MemoryStore(project_dir)
@@ -138,6 +125,73 @@ class Session:
 
         # ── REPL loop ──
         self._repl()
+
+    def _main_menu(self, has_config: bool) -> None:
+        """Show main menu before starting work."""
+        import questionary
+        import webbrowser
+
+        while True:
+            choices = []
+            if has_config:
+                choices.append(questionary.Choice("Continue session -- keep PM and team", value="continue"))
+            choices.extend([
+                questionary.Choice("Start working -- select PM and team", value="new"),
+                questionary.Choice("View code graph -- open in browser", value="graph"),
+                questionary.Choice("View 3D city -- open CodeCharta", value="city"),
+                questionary.Choice("Browse agents -- see all 17 agents", value="agents"),
+                questionary.Choice("Session history -- past sessions and costs", value="history"),
+                questionary.Choice("Quit", value="quit"),
+            ])
+
+            action = questionary.select(
+                "What would you like to do?",
+                choices=choices,
+            ).ask()
+
+            if action is None or action == "quit":
+                raise SystemExit(0)
+
+            if action == "continue":
+                self._continue_session()
+                break
+
+            if action == "new":
+                self._new_session_setup()
+                break
+
+            if action == "graph":
+                graph_html = Path.cwd() / ".code-review-graph" / "graph.html"
+                if graph_html.exists():
+                    webbrowser.open(f"file://{graph_html.resolve()}")
+                    console.print("  [green]Opened code graph in browser.[/green]\n")
+                else:
+                    console.print("  [dim]No code graph found. Build with: matoi viz build[/dim]\n")
+                continue
+
+            if action == "city":
+                cc_files = list(Path.cwd().glob("*.cc.json.gz"))
+                if cc_files:
+                    webbrowser.open("https://codecharta.com/visualization/app/")
+                    console.print(f"  [green]CodeCharta viewer opened. Drag in: {cc_files[0].name}[/green]\n")
+                else:
+                    console.print("  [dim]No 3D city found. Build with: matoi viz build[/dim]\n")
+                continue
+
+            if action == "agents":
+                from matoi.cli.agents import list_agents
+                list_agents()
+                console.print()
+                continue
+
+            if action == "history":
+                from matoi.cli.app import history
+                try:
+                    history(session_id=None)
+                except SystemExit:
+                    pass
+                console.print()
+                continue
 
     def _new_session_setup(self) -> None:
         """Pick PM, describe goal, assemble team. Used on first run or new session."""
