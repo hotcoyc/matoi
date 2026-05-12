@@ -78,13 +78,19 @@ class Session:
         """Main entry point for interactive session."""
         from matoi import __version__
         console.print()
-        try:
-            import pyfiglet
-            banner = pyfiglet.figlet_format("MATOI", font="electronic")
-            console.print(f"[bold cyan]{banner}[/bold cyan]", end="", highlight=False)
-        except ImportError:
-            console.print("[bold cyan]MATOI[/bold cyan]")
-        console.print(f"  [dim]Your startup team in the terminal.            v{__version__}[/dim]")
+        # Block-character banner inspired by GitHub Copilot CLI
+        banner = (
+            "[bold cyan]"
+            "███╗   ███╗ █████╗ ████████╗ ██████╗ ██╗\n"
+            "████╗ ████║██╔══██╗╚══██╔══╝██╔═══██╗██║\n"
+            "██╔████╔██║███████║   ██║   ██║   ██║██║\n"
+            "██║╚██╔╝██║██╔══██║   ██║   ██║   ██║██║\n"
+            "██║ ╚═╝ ██║██║  ██║   ██║   ╚██████╔╝██║\n"
+            "╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝"
+            "[/bold cyan]"
+        )
+        console.print(banner, highlight=False)
+        console.print(f"  [dim]Your startup team in the terminal.               v{__version__}[/dim]")
         console.print("  [dim]/help for commands, /commit before committing, /quit to exit.[/dim]")
         console.print()
 
