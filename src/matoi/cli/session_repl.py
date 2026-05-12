@@ -76,14 +76,15 @@ class Session:
 
     def start(self) -> None:
         """Main entry point for interactive session."""
+        from matoi import __version__
         console.print()
         try:
             import pyfiglet
-            banner = pyfiglet.figlet_format("MATOI", font="block")
-            console.print(f"[bold cyan]{banner}[/bold cyan]", highlight=False)
+            banner = pyfiglet.figlet_format("MATOI", font="banner3-D")
+            console.print(f"[bold cyan]{banner}[/bold cyan]", end="", highlight=False)
         except ImportError:
             console.print("[bold cyan]MATOI[/bold cyan]")
-        console.print("  [dim]Your startup team in the terminal.[/dim]")
+        console.print(f"  [dim]Your startup team in the terminal.            v{__version__}[/dim]")
         console.print("  [dim]/help for commands, /commit before committing, /quit to exit.[/dim]")
         console.print()
 
