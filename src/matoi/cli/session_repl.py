@@ -652,19 +652,18 @@ class Session:
 
         from matoi.core.cost import CostRecord
 
-        # Stream and render markdown live (hide code blocks with filenames)
-        with Live(Markdown(""), console=console, refresh_per_second=4) as live:
+        # Stream with spinner -- don't show raw code
+        with console.status(f"[dim]{agent.name} working...[/dim]"):
             for chunk in self.provider.stream(model_id, system, full_msg):
                 if isinstance(chunk, CostRecord):
                     cost = chunk
                 else:
                     full_text += chunk
-                    try:
-                        display_text = _strip_file_code_blocks(full_text)
-                        live.update(Markdown(display_text))
-                    except Exception:
-                        live.update(full_text)
 
+        # Show only text, strip all code blocks
+        display_text = _strip_all_code_blocks(full_text)
+        if display_text.strip():
+            console.print(Markdown(display_text.strip()))
         console.print()
 
         if cost:
@@ -966,11 +965,7 @@ class Session:
         console.print()
 
 
-def _strip_file_code_blocks(text: str) -> str:
-    """Remove code blocks that have filename tags (e.g. ```index.html) from display.
-    Replace with a placeholder showing the filename."""
+def _strip_all_code_blocks(text: str) -> str:
+    """Remove ALL code blocks from display text. Keep only prose."""
     import re
-    def replacer(match):
-        filename = match.group(1)
-        return f"\n> [file: {filename}]\n"
-    return re.sub(r"```(\S+\.\w+)\n.*?```", replacer, text, flags=re.DOTALL)
+    return re.sub(r"```[\s\S]*?```", "", text).strip()
