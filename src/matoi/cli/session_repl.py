@@ -80,7 +80,7 @@ class Session:
         console.print()
         try:
             import pyfiglet
-            banner = pyfiglet.figlet_format("MATOI", font="banner3-D")
+            banner = pyfiglet.figlet_format("MATOI", font="electronic")
             console.print(f"[bold cyan]{banner}[/bold cyan]", end="", highlight=False)
         except ImportError:
             console.print("[bold cyan]MATOI[/bold cyan]")
