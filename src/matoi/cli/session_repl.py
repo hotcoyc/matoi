@@ -622,14 +622,18 @@ class Session:
             f"Motto: \"{agent.motto}\"\n\n"
             f"{agent.system_prompt}\n\n"
             "CRITICAL RULES:\n"
-            "1. Be concise. Max 200 words. No filler, no self-introductions.\n"
+            "1. Be concise. Max 200 words of explanation. No filler, no self-introductions.\n"
             "2. ADAPT to task complexity. Simple task = simple answer. "
             "Do NOT add compliance gates, sign-off documents, or open-question blockers "
-            "for straightforward tasks like 'build a game' or 'create a landing page.'\n"
+            "for straightforward tasks.\n"
             "3. If the task is clear enough to start, START. Do not ask for more context "
             "unless genuinely missing critical information.\n"
             "4. Do the work, not the paperwork. Produce deliverables, not process documents.\n"
-            "5. When writing code, write COMPLETE working code. No truncation, no TODOs."
+            "5. When writing code: put COMPLETE file content in a code block tagged with the filename.\n"
+            "   Example: ```index.html\\n<full code>\\n```\n"
+            "   Do NOT show code inline in your explanation. Just say what the file does.\n"
+            "   The system will automatically save files to disk.\n"
+            "6. Your text response should only describe WHAT you created and WHY. Not the code itself."
         )
 
         full_msg = f"{context_prefix}{user_msg}" if context_prefix else user_msg
@@ -639,7 +643,7 @@ class Session:
 
         from matoi.core.cost import CostRecord
 
-        # Stream and render markdown live
+        # Stream and render markdown live (hide code blocks with filenames)
         with Live(Markdown(""), console=console, refresh_per_second=4) as live:
             for chunk in self.provider.stream(model_id, system, full_msg):
                 if isinstance(chunk, CostRecord):
@@ -647,7 +651,8 @@ class Session:
                 else:
                     full_text += chunk
                     try:
-                        live.update(Markdown(full_text))
+                        display_text = _strip_file_code_blocks(full_text)
+                        live.update(Markdown(display_text))
                     except Exception:
                         live.update(full_text)
 
@@ -662,7 +667,8 @@ class Session:
         from matoi.orchestrator.dispatch import _extract_and_write_files
         written = _extract_and_write_files(full_text, Path.cwd())
         if written:
-            console.print(f"  [green]Wrote {len(written)} file(s): {', '.join(written)}[/green]")
+            for f in written:
+                console.print(f"  [green]Created: {f}[/green]")
 
         # Track in context history
         self.context_history.append({"role": "user", "content": user_msg[:500]})
@@ -934,3 +940,13 @@ class Session:
         console.print()
         console.print(table)
         console.print()
+
+
+def _strip_file_code_blocks(text: str) -> str:
+    """Remove code blocks that have filename tags (e.g. ```index.html) from display.
+    Replace with a placeholder showing the filename."""
+    import re
+    def replacer(match):
+        filename = match.group(1)
+        return f"\n> [file: {filename}]\n"
+    return re.sub(r"```(\S+\.\w+)\n.*?```", replacer, text, flags=re.DOTALL)
