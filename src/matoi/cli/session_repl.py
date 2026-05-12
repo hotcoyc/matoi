@@ -208,14 +208,39 @@ class Session:
             )
 
     def _first_run_setup(self) -> None:
-        """Auto-setup on first run: code graph, mempalace, codecharta."""
+        """Auto-setup on first run: scan project, code graph, memory."""
         import shutil
         import subprocess
+        from rich.tree import Tree
+        from matoi.core.scanner import scan_project
+
         cwd = Path.cwd()
 
-        console.print("  [dim]First run -- setting up project tools...[/dim]\n")
+        console.print("  [dim]First run -- analyzing project...[/dim]\n")
 
-        # code-review-graph
+        # 1. Project structure
+        scan = scan_project(cwd)
+        console.print(f"  [bold]Project: {scan.name}[/bold]")
+        console.print(f"  Files: {scan.total_files} | Dirs: {scan.total_dirs}")
+        if scan.languages:
+            top = sorted(scan.languages.items(), key=lambda x: x[1], reverse=True)[:5]
+            langs = ", ".join(f"{lang} ({count})" for lang, count in top)
+            console.print(f"  Languages: {langs}")
+        if scan.frameworks:
+            console.print(f"  Frameworks: {', '.join(scan.frameworks)}")
+        if scan.is_git:
+            console.print(f"  Git: {scan.git_commits} commits")
+        console.print()
+
+        # File tree
+        if scan.file_tree:
+            tree = Tree(f"[bold]{scan.name}/[/bold]")
+            for line in scan.file_tree.strip().split("\n")[:15]:
+                tree.add(line.strip())
+            console.print(tree)
+            console.print()
+
+        # 2. Code graph
         if shutil.which("code-review-graph"):
             try:
                 console.print("  [dim]Building code graph...[/dim]")
@@ -224,8 +249,12 @@ class Session:
                     cwd=cwd, capture_output=True, text=True, timeout=60,
                 )
                 if result.returncode == 0:
-                    console.print("  [green]Code graph built.[/green]")
-                    # Generate visualization
+                    for line in (result.stderr + result.stdout).splitlines():
+                        if "nodes" in line and "edges" in line:
+                            console.print(f"  [green]Code graph: {line.strip()}[/green]")
+                            break
+                    else:
+                        console.print("  [green]Code graph built.[/green]")
                     subprocess.run(
                         ["code-review-graph", "visualize"],
                         cwd=cwd, capture_output=True, text=True, timeout=30,
@@ -233,25 +262,7 @@ class Session:
             except (subprocess.TimeoutExpired, Exception):
                 pass
 
-        # mempalace
-        if shutil.which("mempalace"):
-            try:
-                mempalace_yaml = cwd / "mempalace.yaml"
-                if not mempalace_yaml.exists():
-                    console.print("  [dim]Initializing memory...[/dim]")
-                    subprocess.run(
-                        ["mempalace", "init", str(cwd), "--yes"],
-                        capture_output=True, text=True, timeout=30,
-                    )
-                    subprocess.run(
-                        ["mempalace", "mine", str(cwd), "--wing", cwd.name],
-                        capture_output=True, text=True, timeout=60,
-                    )
-                    console.print("  [green]Memory initialized.[/green]")
-            except (subprocess.TimeoutExpired, Exception):
-                pass
-
-        # CodeCharta (npm)
+        # 3. CodeCharta (3D city)
         if shutil.which("ccsh"):
             try:
                 console.print("  [dim]Building 3D code city...[/dim]")
