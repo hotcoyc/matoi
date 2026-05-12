@@ -22,8 +22,8 @@ Four PMs with genuinely different decision-making styles. Oliver cuts scope and 
 **Cost-intelligent routing.**
 Haiku ($1/M) for routine work, Sonnet ($3/M) for expert opinions, Opus ($15/M) for strategic decisions. Not "expensive model for everything." A typical task with 3 agents costs $0.30-0.80.
 
-**Memory that persists.**
-MemPalace (96.6% recall) stores decisions, context, and knowledge across sessions. Agents don't start from zero every time. The PM's brief references what the team decided last week.
+**Memory that persists -- per project.**
+MemPalace (96.6% recall) stores decisions, context, and knowledge across sessions in `matoi/memory/` inside the project directory. Agents don't start from zero every time. The PM's brief references what the team decided last week.
 
 **Sessions that last for hours.**
 Context compaction kicks in at 85% of the window. Old messages are summarized via Haiku (~$0.003). Recent messages stay verbatim. Full history preserved in MemPalace. No degradation, no token explosion.
@@ -71,7 +71,9 @@ _|      _|  _|    _|      _|        _|_|    _|_|_|
   [my-project/Oliver] > _
 ```
 
-You type tasks -- the agent team responds in real time with streaming markdown. Tab autocompletes commands and @agents. Alt+Enter for multiline.
+You type tasks -- the agent team works behind a spinner (no live code streaming). Only descriptions and "Created: filename" appear in the console. Tab autocompletes commands and @agents with descriptions. Alt+Enter for multiline.
+
+On repeated launch in the same project, Matoi offers to continue the previous session or start a new one.
 
 ## Two Pipeline Modes
 
@@ -187,7 +189,7 @@ matoi task plan "task" -t demo # dry run
 exit       -- exit session (also: quit, q, Ctrl+D)
 ```
 
-On session exit, a standup is auto-generated: what was done, decisions made, blockers, next steps. Saved as artifact, indexed in MemPalace.
+On session exit, a summary is printed: files created, tasks completed, debates held, and a cost table with model column. The summary is also saved as an artifact and indexed in MemPalace.
 
 ## Cost Routing
 
@@ -204,7 +206,7 @@ Typical task with 3 agents, no debate: $0.30-0.80.
 | Tool | What It Does |
 |------|-------------|
 | **Anthropic API** | Streaming LLM calls, cost routing, retry with backoff |
-| **MemPalace** | Memory: semantic search (96.6% recall), knowledge graph, auto-save |
+| **MemPalace** | Per-project memory: semantic search (96.6% recall), knowledge graph, auto-save |
 | **code-review-graph** | AI code navigation: 28 MCP tools, auto-update on commit |
 | **CodeCharta** | 3D code architecture visualization |
 | **Questionary** | Arrow-key select, checkbox menus for PM/team selection |
@@ -213,6 +215,21 @@ Typical task with 3 agents, no debate: $0.30-0.80.
 | **Rich** | Live markdown rendering, tables, panels |
 
 ## Project Structure
+
+```
+~/my-project/
+  matoi/
+    config.json          -- PM + team for this project
+    artifacts/           -- standup reports, debate transcripts
+    memory/
+      palace/            -- MemPalace per-project (semantic search)
+      knowledge_graph.sqlite3  -- per-project knowledge graph
+  index.html             -- files created by agents (in project root)
+
+~/.matoi/
+  config.json            -- API key (global, shared across projects)
+  history                -- input history (shared)
+```
 
 ```
 src/matoi/

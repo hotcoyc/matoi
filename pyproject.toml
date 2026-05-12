@@ -1,6 +1,6 @@
 [project]
 name = "matoi"
-version = "0.3.1"
+version = "0.3.2"
 description = "Matoi (纏) — CLI platform where AI agents work as a full startup team"
 readme = "README.md"
 requires-python = ">=3.11"
