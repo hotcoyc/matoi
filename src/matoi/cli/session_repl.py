@@ -211,6 +211,7 @@ class Session:
         """Auto-setup on first run: scan project, code graph, memory."""
         import shutil
         import subprocess
+        import sys
         from rich.tree import Tree
         from matoi.core.scanner import scan_project
 
@@ -240,27 +241,28 @@ class Session:
             console.print(tree)
             console.print()
 
-        # 2. Code graph
-        if shutil.which("code-review-graph"):
-            try:
-                console.print("  [dim]Building code graph...[/dim]")
-                result = subprocess.run(
-                    ["code-review-graph", "build"],
-                    cwd=cwd, capture_output=True, text=True, timeout=60,
+        # 2. Code graph (use sys.executable to find CLI in same venv)
+        try:
+            import code_review_graph  # noqa: F401
+            crg_bin = shutil.which("code-review-graph") or f"{sys.executable.rsplit('/', 1)[0]}/code-review-graph"
+            console.print("  [dim]Building code graph...[/dim]")
+            result = subprocess.run(
+                [crg_bin, "build"],
+                cwd=cwd, capture_output=True, text=True, timeout=60,
+            )
+            if result.returncode == 0:
+                for line in (result.stderr + result.stdout).splitlines():
+                    if "nodes" in line and "edges" in line:
+                        console.print(f"  [green]Code graph: {line.strip()}[/green]")
+                        break
+                else:
+                    console.print("  [green]Code graph built.[/green]")
+                subprocess.run(
+                    [crg_bin, "visualize"],
+                    cwd=cwd, capture_output=True, text=True, timeout=30,
                 )
-                if result.returncode == 0:
-                    for line in (result.stderr + result.stdout).splitlines():
-                        if "nodes" in line and "edges" in line:
-                            console.print(f"  [green]Code graph: {line.strip()}[/green]")
-                            break
-                    else:
-                        console.print("  [green]Code graph built.[/green]")
-                    subprocess.run(
-                        ["code-review-graph", "visualize"],
-                        cwd=cwd, capture_output=True, text=True, timeout=30,
-                    )
-            except (subprocess.TimeoutExpired, Exception):
-                pass
+        except (ImportError, Exception):
+            pass
 
         # 3. CodeCharta (3D city)
         if shutil.which("ccsh"):
