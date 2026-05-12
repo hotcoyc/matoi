@@ -43,7 +43,9 @@ Source layout:
 
 ## Conventions
 
-- Version: v0.3.2
+- Version: v0.3.8
+- Main menu on launch: view graph, 3D city, browse agents, history, or start working
+- Block-character banner (Unicode █╗╔╝╚) like GitHub Copilot CLI
 - Python 3.11+, type hints everywhere
 - Pydantic v2 for all data models
 - Typer for CLI, Rich for terminal rendering (markdown, tables, panels)

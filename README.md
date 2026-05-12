@@ -47,31 +47,38 @@ pipx install matoi
 matoi
 ```
 
-On first launch, Matoi asks for an Anthropic API key, scans the project, builds a code graph, initializes memory, and offers to assemble a team.
+On first launch, Matoi asks for an Anthropic API key, scans the project, builds a code graph, and shows you the main menu.
 
 ## How It Works
 
 ```
 $ matoi
 
-_|      _|    _|_|    _|_|_|_|_|    _|_|    _|_|_|
-_|_|  _|_|  _|    _|      _|      _|    _|    _|
-_|  _|  _|  _|_|_|_|      _|      _|    _|    _|
-_|      _|  _|    _|      _|      _|    _|    _|
-_|      _|  _|    _|      _|        _|_|    _|_|_|
+███╗   ███╗ █████╗ ████████╗ ██████╗ ██╗
+████╗ ████║██╔══██╗╚══██╔══╝██╔═══██╗██║
+██╔████╔██║███████║   ██║   ██║   ██║██║
+██║╚██╔╝██║██╔══██║   ██║   ██║   ██║██║
+██║ ╚═╝ ██║██║  ██║   ██║   ╚██████╔╝██║
+╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝
 
-  ? Choose PM: (use arrow keys)
-    > Oliver  -- Startup PM, "Ship it by Friday."
-      Aurora  -- Delivery PM, predictability and milestones
-      Marcus  -- Enterprise PM, documentation and compliance
-      Stella  -- Product Strategist PM, user value first
+  Your startup team in the terminal.
+  v0.3.8
 
-  What are you working on today? > Design MVP for pet care app
-  ? Assemble team: Auto -- PM recommends team
+  Project: my-project
+  Files: 42 | Dirs: 8
+  Languages: Python (28), JavaScript (6)
+  Git: 156 commits
 
-  Team: Backend Engineer, Product Designer, Market Researcher
+  Code graph: 210 nodes, 1317 edges
+  3D city built.
 
-  [my-project/Oliver] > _
+? What would you like to do?
+  > Start working -- select PM and team
+    View code graph -- open in browser
+    View 3D city -- open CodeCharta
+    Browse agents -- see all 17 agents
+    Session history -- past sessions and costs
+    Quit
 ```
 
 You type tasks -- the agent team works behind a spinner (no live code streaming). Only descriptions and "Created: filename" appear in the console. Tab autocompletes commands and @agents with descriptions. Alt+Enter for multiline.
