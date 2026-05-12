@@ -90,7 +90,10 @@ class Session:
             "[/bold cyan]"
         )
         console.print(banner, highlight=False)
-        console.print(f"  [dim]Your startup team in the terminal.               v{__version__}[/dim]")
+        console.print()
+        console.print("  [dim]Your startup team in the terminal.[/dim]")
+        console.print(f"  [dim]v{__version__}[/dim]")
+        console.print()
         console.print("  [dim]/help for commands, /commit before committing, /quit to exit.[/dim]")
         console.print()
 
