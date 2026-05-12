@@ -35,19 +35,19 @@ MATOI_STYLE = Style.from_dict({
 
 # ── Commands ──
 
-COMMANDS = [
-    "/help",
-    "/team",
-    "/cost",
-    "/commit",
-    "/standup",
-    "/execute",
-    "/key",
-    "/quit",
-    "/exit",
-    "/history",
-    "/agents",
-]
+COMMANDS = {
+    "/help": "show all commands",
+    "/team": "show current team",
+    "/agents": "list all 17 agents",
+    "/cost": "session cost breakdown",
+    "/history": "tasks in this session",
+    "/standup": "generate session summary",
+    "/execute": "PM splits task, agents execute",
+    "/commit": "review -> debate -> commit",
+    "/key": "change API key",
+    "/quit": "end session",
+    "/exit": "end session",
+}
 
 
 class MatoiCompleter(Completer):
@@ -63,10 +63,10 @@ class MatoiCompleter(Completer):
         # Command completion (fuzzy)
         if text.startswith("/"):
             query = word.lower().lstrip("/")
-            for cmd in COMMANDS:
+            for cmd, desc in COMMANDS.items():
                 cmd_name = cmd.lstrip("/")
                 if not query or query in cmd_name:
-                    yield Completion(cmd, start_position=-len(word), display_meta="command")
+                    yield Completion(cmd, start_position=-len(word), display_meta=desc)
 
         # Agent mention completion (fuzzy)
         elif "@" in text:
