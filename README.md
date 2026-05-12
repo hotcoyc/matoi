@@ -28,6 +28,9 @@ MemPalace (96.6% recall) stores decisions, context, and knowledge across session
 **Sessions that last for hours.**
 Context compaction kicks in at 85% of the window. Old messages are summarized via Haiku (~$0.003). Recent messages stay verbatim. Full history preserved in MemPalace. No degradation, no token explosion.
 
+**AI data stays local.**
+All session data, memory, and artifacts live in `.matoi/` inside your project -- automatically added to `.gitignore` on first run. Your AI conversations, decisions, and costs never leave your machine or enter your repo.
+
 **Pre-commit debate.**
 Type `/commit` and agents review your diff, flag issues, debate disagreements, then commit. Built-in code review by your team before every push.
 

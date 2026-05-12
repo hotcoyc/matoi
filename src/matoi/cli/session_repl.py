@@ -98,6 +98,7 @@ class Session:
         if not has_config:
             # First run -- full setup
             ensure_project_structure()
+            _add_to_gitignore(Path.cwd())
             self._first_run_setup()
             self._new_session_setup()
         else:
@@ -969,3 +970,20 @@ def _strip_all_code_blocks(text: str) -> str:
     """Remove ALL code blocks from display text. Keep only prose."""
     import re
     return re.sub(r"```[\s\S]*?```", "", text).strip()
+
+
+def _add_to_gitignore(cwd: Path) -> None:
+    """Add .matoi/ to project's .gitignore. AI data stays local."""
+    gitignore = cwd / ".gitignore"
+    entry = ".matoi/"
+
+    if gitignore.exists():
+        content = gitignore.read_text()
+        if entry in content:
+            return
+        if not content.endswith("\n"):
+            content += "\n"
+        content += f"\n# Matoi AI workspace (local only)\n{entry}\n"
+        gitignore.write_text(content)
+    else:
+        gitignore.write_text(f"# Matoi AI workspace (local only)\n{entry}\n")
