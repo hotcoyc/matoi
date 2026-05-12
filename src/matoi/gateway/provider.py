@@ -31,7 +31,7 @@ class AnthropicProvider:
         model_id: str,
         system_prompt: str,
         user_message: str,
-        max_tokens: int = 4096,
+        max_tokens: int = 16384,
     ) -> tuple[str, CostRecord]:
         """Make a non-streaming LLM call with retry. Returns (full_text, cost)."""
         last_error = None
@@ -108,7 +108,7 @@ class AnthropicProvider:
         model_id: str,
         system_prompt: str,
         user_message: str,
-        max_tokens: int = 4096,
+        max_tokens: int = 16384,
     ) -> Generator[str | CostRecord, None, None]:
         """Stream an LLM call with retry. Yields text chunks, then a final CostRecord."""
         last_error = None

@@ -658,6 +658,12 @@ class Session:
             cost.stage = stage
             self.cost_tracker.record(cost)
 
+        # Extract and write any files from code blocks
+        from matoi.orchestrator.dispatch import _extract_and_write_files
+        written = _extract_and_write_files(full_text, Path.cwd())
+        if written:
+            console.print(f"  [green]Wrote {len(written)} file(s): {', '.join(written)}[/green]")
+
         # Track in context history
         self.context_history.append({"role": "user", "content": user_msg[:500]})
         self.context_history.append({"role": agent.slug, "content": full_text[:500]})
