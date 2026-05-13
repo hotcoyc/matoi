@@ -80,18 +80,28 @@ def wake_up(
 def clear_memory(
     force: bool = typer.Option(False, "--force", "-f", help="Skip confirmation."),
 ) -> None:
-    """Clear all memory (removes MemPalace data)."""
+    """Clear this project's memory (palace + knowledge graph)."""
+    import shutil
+
+    from matoi.core.config import get_project_dir
+
+    memory_dir = get_project_dir() / "memory"
+    palace_dir = memory_dir / "palace"
+    kg_path = memory_dir / "knowledge_graph.sqlite3"
+
+    targets = [p for p in (palace_dir, kg_path) if p.exists()]
+    if not targets:
+        console.print("[dim]No memory found for this project.[/dim]")
+        return
+
     if not force:
-        confirm = typer.confirm("This will delete all memory. Continue?")
-        if not confirm:
+        console.print(f"[dim]Will remove: {', '.join(str(p) for p in targets)}[/dim]")
+        if not typer.confirm("Continue?"):
             raise typer.Exit()
 
-    import shutil
-    from pathlib import Path
-
-    palace_dir = Path.home() / ".mempalace"
-    if palace_dir.exists():
-        shutil.rmtree(palace_dir)
-        console.print("[dim]MemPalace data cleared.[/dim]")
-    else:
-        console.print("[dim]No MemPalace data found.[/dim]")
+    for path in targets:
+        if path.is_dir():
+            shutil.rmtree(path)
+        else:
+            path.unlink()
+    console.print(f"[dim]Cleared project memory in {memory_dir}.[/dim]")

@@ -28,3 +28,6 @@ entities.json
 memory/
 scripts/gen_avatars.py
 /docs/
+
+# Matoi AI workspace (local only)
+.matoi/
