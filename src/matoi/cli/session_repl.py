@@ -184,8 +184,20 @@ class Session:
                 continue
 
             if action == "agents":
-                from matoi.cli.agents import list_agents
-                list_agents()
+                agents = self.registry.list_all()
+                if not agents:
+                    console.print("  [dim]No agents found.[/dim]\n")
+                else:
+                    from rich.table import Table
+                    table = Table(title=f"Agents ({len(agents)})", border_style="dim", show_lines=False)
+                    table.add_column("#", width=3, justify="right")
+                    table.add_column("Agent", min_width=22)
+                    table.add_column("Type", width=10)
+                    table.add_column("Category", width=16)
+                    table.add_column("Motto", style="italic dim")
+                    for i, a in enumerate(sorted(agents, key=lambda x: x.category.value), 1):
+                        table.add_row(str(i), a.name, a.agent_type.value, a.category.value, a.motto or "")
+                    console.print(table)
                 console.print()
                 continue
 
