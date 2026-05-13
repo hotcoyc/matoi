@@ -6,39 +6,21 @@ A CLI platform where AI agents work as a complete startup team: from market vali
 
 ## Why Matoi
 
-**A full startup team, not just a dev tool.**
-Every competitor (MetaGPT, CrewAI, gstack, Aider) only covers code. Matoi covers research, strategy, marketing, design, engineering, and QA -- the full startup pipeline from idea validation to launch.
-
-**Agents that actually disagree.**
-Not "three agents taking turns agreeing." Conflicts are detected automatically. When agents disagree, structured debate rounds run: claim, critique, concession, recommendation. The PM makes the final call.
-
-**Two modes of work.**
-Advisory: "what should we do?" -- the team gives opinions, debates, PM synthesizes.
-Execution: "do it" -- PM breaks the task into subtasks, assigns each to the right agent, tracks DONE/BLOCKED status.
-
-**PMs with character.**
-Four PMs with genuinely different decision-making styles. Oliver cuts scope and ships fast. Aurora plans milestones and tracks blockers. Marcus demands documentation. Stella asks "but what does the user need?" This is not cosmetic -- it changes the output.
-
-**Cost-intelligent routing.**
-Haiku ($1/M) for routine work, Sonnet ($3/M) for expert opinions, Opus ($15/M) for strategic decisions. Not "expensive model for everything." A typical task with 3 agents costs $0.30-0.80.
-
-**Memory that persists -- per project.**
-MemPalace (96.6% recall) stores decisions, context, and knowledge across sessions in `.matoi/memory/` inside the project directory. Agents don't start from zero every time. The PM's brief references what the team decided last week.
-
-**Sessions that last for hours.**
-Context compaction kicks in at 85% of the window. Old messages are summarized via Haiku (~$0.003). Recent messages stay verbatim. Full history preserved in MemPalace. No degradation, no token explosion.
-
-**AI data stays local.**
-All session data, memory, and artifacts live in `.matoi/` inside your project -- automatically added to `.gitignore` on first run. Your AI conversations, decisions, and costs never leave your machine or enter your repo.
-
-**Pre-commit debate.**
-Type `/commit` and agents review your diff, flag issues, debate disagreements, then commit. Built-in code review by your team before every push.
-
-**Real cost tracking.**
-Every API call tracked: agent, stage, model, tokens, cost in USD. Per-session and per-model breakdowns. You always know exactly what you're spending.
-
-**One command to start.**
-`pipx install matoi && matoi` -- that's it. API key on first run, project auto-scanned, code graph built, team assembled.
+| | |
+|---|---|
+| **Full startup team** | Research, strategy, marketing, design, engineering, QA -- not just code |
+| **Structured debate** | Agents disagree, debate, PM decides. Not "three bots agreeing" |
+| **Two modes** | Advisory (opinions + synthesis) or Execution (subtasks + DONE/BLOCKED) |
+| **4 PM styles** | Oliver ships fast, Aurora plans milestones, Marcus documents, Stella advocates users |
+| **Smart routing** | Haiku $1/M, Sonnet $3/M, Opus $15/M -- right model for right task |
+| **Per-project memory** | MemPalace in `.matoi/` -- agents remember past decisions |
+| **Code graph** | Auto-built dependency graph with 28 MCP tools -- agents navigate code, not files |
+| **3D code city** | CodeCharta visualization -- see your codebase as a city of buildings |
+| **Long sessions** | Auto-compaction at 85% context -- hours without degradation |
+| **Local & private** | `.matoi/` auto-added to `.gitignore` -- AI data never enters your repo |
+| **Pre-commit review** | `/commit` -- agents review diff, debate, then commit |
+| **Cost tracking** | Every call: agent, model, tokens, USD. Per-session breakdown |
+| **One command** | `pipx install matoi && matoi` -- that's it |
 
 ## Quick Start
 
