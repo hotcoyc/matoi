@@ -31,3 +31,6 @@ scripts/gen_avatars.py
 
 # Matoi AI workspace (local only)
 .matoi/
+
+# Agent-generated artifacts in project root (when matoi is run on itself)
+/index.html

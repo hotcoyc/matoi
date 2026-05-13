@@ -43,23 +43,15 @@ Source layout:
 
 ## Conventions
 
-- Version: v0.3.8
-- Main menu on launch: view graph, 3D city, browse agents, history, or start working
-- Block-character banner (Unicode █╗╔╝╚) like GitHub Copilot CLI
+- Version: source of truth is `pyproject.toml`. Do not hardcode the number in docs or code.
 - Python 3.11+, type hints everywhere
 - Pydantic v2 for all data models
-- Typer for CLI, Rich for terminal rendering (markdown, tables, panels)
-- Questionary for interactive menus (arrow-key select, checkbox)
-- alive-progress for animated spinners during pipeline stages (code hidden from console, only descriptions and "Created: filename" shown)
-- prompt_toolkit for REPL (autocomplete with descriptions, history, status bar)
 - Anthropic Python SDK (not Agent SDK) -- full control over each call
 - Agent definitions: Markdown + YAML frontmatter, one file per agent
 - Memory is per-project (`.matoi/memory/`), not global
-- Session exit prints summary: files created, tasks, debates, cost table with model column
-- Repeated launch offers Continue/New session
-- Team recommendation uses JSON regex parsing (fixed in v0.3.2)
-- Code and comment language: English
-- Documentation language: English
+- Code, comments, docs, commit messages: English (chat with user: Russian)
+
+User-facing feature list (CLI flags, REPL commands, banner, menu options, session summary, etc.) lives in `README.md`. Keep it there — do not duplicate in this file.
 
 ## Key Principles
 

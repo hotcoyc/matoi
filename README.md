@@ -4,6 +4,25 @@ A CLI platform where AI agents work as a complete startup team: from market vali
 
 *Matoi -- a Japanese firefighter's standard, around which the team rallies.*
 
+> **Status: alpha (0.3.x).** APIs, command names, and on-disk layout may change between
+> minor versions. Requires an Anthropic API key — usage is billed by Anthropic; a typical
+> task with 3 agents runs $0.30–0.80 (see [Cost Routing](#cost-routing)).
+> Changes per release: [CHANGELOG.md](CHANGELOG.md).
+
+## Contents
+
+- [Why Matoi](#why-matoi)
+- [Quick Start](#quick-start)
+- [How It Works](#how-it-works)
+- [Two Pipeline Modes](#two-pipeline-modes)
+- [17 Agents](#17-agents)
+- [CLI Commands](#cli-commands)
+- [Session Commands](#session-commands)
+- [Cost Routing](#cost-routing)
+- [Integrations](#integrations)
+- [Project Structure](#project-structure)
+- [Requirements](#requirements)
+
 ## Why Matoi
 
 | | |
@@ -44,7 +63,7 @@ $ matoi
 ╚═╝     ╚═╝╚═╝  ╚═╝   ╚═╝    ╚═════╝ ╚═╝
 
   Your startup team in the terminal.
-  v0.3.8
+  v0.3.10
 
   Project: my-project
   Files: 42 | Dirs: 8
@@ -146,24 +165,38 @@ Each agent is a `.md` file with YAML frontmatter: role, debate style, model poli
 ## CLI Commands
 
 ```bash
-matoi                          # interactive session
-matoi run "task"               # one-shot pipeline
-matoi cost                     # cost breakdown by sessions and models
-matoi history                  # browse past sessions and artifacts
+matoi                                # interactive session
+matoi run "task"                     # one-shot pipeline
+matoi run "task" --budget 1.0        # with USD budget cap (default: 5.0)
+matoi cost                           # cost breakdown by sessions and models
+matoi history                        # browse past sessions and artifacts
+matoi demo                           # record a demo GIF (requires VHS)
 
-matoi roster list              # agent table
-matoi roster show startup-pm   # card with pixel-art avatar
+matoi roster list                    # agent table
+matoi roster list --category research # filter
+matoi roster show startup-pm         # card with pixel-art avatar
 
-matoi team create              # assemble a team
-matoi team show / list         # view teams
+matoi team create                    # assemble a team
+matoi team add <team> <agent>        # add an agent
+matoi team remove <team> <agent>     # remove an agent
+matoi team list / show               # view teams
+matoi team recommend "task"          # PM suggests a composition
 
-matoi memory show              # MemPalace status
-matoi memory search "query"    # semantic memory search
+matoi session list                   # recent sessions
+matoi session artifacts <id>         # artifacts from a session
 
-matoi viz graph                # dependency graph in browser
-matoi viz city                 # 3D code city (CodeCharta)
+matoi memory show                    # MemPalace status
+matoi memory search "query"          # semantic memory search
+matoi memory mine .                  # index files into memory
+matoi memory wake-up                 # startup context (Layer 0 + 1)
+matoi memory clear                   # wipe palace + knowledge graph
 
-matoi task plan "task" -t demo # dry run
+matoi viz graph                      # dependency graph in browser
+matoi viz city                       # 3D code city (CodeCharta)
+matoi viz build                      # rebuild all visualizations
+matoi viz status                     # visualization status
+
+matoi task plan "task" -t demo       # dry run, no API calls
 ```
 
 ## Session Commands
