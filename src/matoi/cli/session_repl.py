@@ -202,11 +202,32 @@ class Session:
                 continue
 
             if action == "history":
-                from matoi.cli.app import history
-                try:
-                    history(session_id=None)
-                except SystemExit:
-                    pass
+                from matoi.core.config import get_project_dir
+                import json
+                artifacts_dir = get_project_dir() / "artifacts"
+                if not artifacts_dir.exists() or not list(artifacts_dir.iterdir()):
+                    console.print("  [dim]No sessions yet.[/dim]")
+                else:
+                    from rich.table import Table
+                    sessions = sorted(artifacts_dir.iterdir(), reverse=True)
+                    table = Table(title="Sessions", border_style="dim")
+                    table.add_column("Session", min_width=24)
+                    table.add_column("Files", justify="right", width=6)
+                    table.add_column("Cost", justify="right", style="yellow", width=10)
+                    for sd in sessions:
+                        if not sd.is_dir():
+                            continue
+                        files = list(sd.iterdir())
+                        cost_str = ""
+                        cost_file = sd / "cost.json"
+                        if cost_file.exists():
+                            try:
+                                data = json.loads(cost_file.read_text())
+                                cost_str = f"${data.get('total_cost_usd', 0):.4f}"
+                            except Exception:
+                                pass
+                        table.add_row(sd.name, str(len(files)), cost_str)
+                    console.print(table)
                 console.print()
                 continue
 
