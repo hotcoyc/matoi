@@ -585,3 +585,44 @@ def history(
             console.print(f"\n  [bold]Total: ${data.get('total_cost_usd', 0):.4f}[/bold]\n")
         except Exception:
             pass
+
+
+@app.command()
+def demo() -> None:
+    """Record a demo GIF of matoi in action (requires VHS)."""
+    import shutil
+    import subprocess
+    from pathlib import Path
+
+    if not shutil.which("vhs"):
+        console.print("[red]VHS not installed. Install with: brew install vhs[/red]")
+        raise typer.Exit(1)
+
+    # Find demo.tape
+    tape_locations = [
+        Path.cwd() / "demo.tape",
+        Path(__file__).resolve().parent.parent.parent.parent / "demo.tape",
+    ]
+
+    tape = None
+    for loc in tape_locations:
+        if loc.exists():
+            tape = loc
+            break
+
+    if not tape:
+        console.print("[red]demo.tape not found.[/red]")
+        raise typer.Exit(1)
+
+    console.print(f"  Recording demo from {tape.name}...")
+    console.print("  [dim]This will take ~30 seconds. Don't touch the terminal.[/dim]\n")
+
+    result = subprocess.run(
+        ["vhs", str(tape)],
+        capture_output=False,
+    )
+
+    if result.returncode == 0:
+        console.print("\n  [green]Demo recorded: demo.gif[/green]")
+    else:
+        console.print("\n  [red]Recording failed.[/red]")
