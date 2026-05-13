@@ -172,8 +172,13 @@ class Session:
             if action == "city":
                 cc_files = list(Path.cwd().glob("*.cc.json.gz"))
                 if cc_files:
+                    cc_path = cc_files[0].resolve()
                     webbrowser.open("https://codecharta.com/visualization/app/")
-                    console.print(f"  [green]CodeCharta viewer opened. Drag in: {cc_files[0].name}[/green]\n")
+                    console.print()
+                    console.print("  [green]CodeCharta viewer opened in browser.[/green]")
+                    console.print(f"  [bold]Drag this file into the viewer:[/bold]")
+                    console.print(f"  [cyan]{cc_path}[/cyan]")
+                    console.print()
                 else:
                     console.print("  [dim]No 3D city found. Build with: matoi viz build[/dim]\n")
                 continue
